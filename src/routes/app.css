@@ -1,0 +1,50 @@
+@font-face {
+    font-family: Geist;
+    src: url(./assets/fonts/Geist-Regular.woff2);
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Protest Strike';
+    src: url(./assets//fonts/ProtestStrike-Regular.ttf);
+    font-style: normal;
+}
+
+:root {
+    --dark-mode-bg: #1f1f2e;
+    --dark-mode-fg: #242442;
+    --dark-mode-text: #fff;
+    --dark-mode-subtext: #ccc;
+    --dark-mode-alt-fg: #3a3a78;
+}
+
+body {
+    margin: 0;
+    font-family: Geist;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 5vw;
+    padding-right: 5vw;
+    background: var(--dark-mode-fg);
+    align-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 8px #111a;
+    & > h2 {
+        font-family: 'Protest Strike';
+        color: var(--dark-mode-text);
+        font-weight: normal;
+        cursor: pointer;
+    }
+    & > a {
+        color: var(--dark-mode-text);
+        text-decoration: none;
+        transition: color 150ms ease-in;
+        &:hover {
+            color: var(--dark-mode-subtext);
+            transition: color 150ms ease-out;
+        }
+    }
+}

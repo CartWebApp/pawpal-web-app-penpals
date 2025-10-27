@@ -6,7 +6,7 @@
 
 @font-face {
     font-family: 'Protest Strike';
-    src: url(./assets//fonts/ProtestStrike-Regular.ttf);
+    src: url(./assets/fonts/ProtestStrike-Regular.ttf);
     font-style: normal;
 }
 
@@ -21,6 +21,8 @@
 body {
     margin: 0;
     font-family: Geist;
+    background: var(--dark-mode-bg);
+    color: var(--dark-mode-text);
 }
 
 nav {
@@ -32,13 +34,17 @@ nav {
     align-content: center;
     align-items: center;
     box-shadow: 0px 4px 8px #111a;
-    & > h2 {
-        font-family: 'Protest Strike';
-        color: var(--dark-mode-text);
-        font-weight: normal;
-        cursor: pointer;
+    & > :first-child {
+        text-decoration: none;
+        & > h2 {
+            font-family: 'Protest Strike';
+            color: var(--dark-mode-text);
+            font-weight: normal;
+            font-size: 2rem;
+            cursor: pointer;
+        }
     }
-    & > a {
+    & > a:not(:first-child) {
         color: var(--dark-mode-text);
         text-decoration: none;
         transition: color 150ms ease-in;
@@ -47,4 +53,159 @@ nav {
             transition: color 150ms ease-out;
         }
     }
+    & > details {
+        display: flex block;
+        flex-direction: column;
+        border: 1px solid var(--dark-mode-text);
+        border-radius: 0.4rem;
+        width: 50rem;
+        min-height: 2.4rem;
+        color: var(--dark-mode-text);
+        background: var(--dark-mode-fg);
+        align-content: center;
+        align-items: center;
+        width: max-content;
+        justify-content: center;
+        font-size: 1.2rem;
+        &:open {
+            justify-content: space-around;
+            margin-bottom: -9vh;
+            gap: 0.3rem;
+        }
+        & summary svg:last-child {
+            transition: transform 150ms ease-in;
+            transform: rotate(0deg);
+            :open & {
+                transform: rotate(90deg);
+            }
+        }
+        & > summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-content: center;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.3rem;
+            & > svg {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+            &:hover {
+                color: var(--dark-mode-subtext);
+            }
+        }
+        &:not(:open):has(summary:hover) {
+            background: var(--dark-mode-bg);
+        }
+        & > a {
+            display: flex;
+            align-content: center;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.8vw;
+            padding: 0.3rem 0rem;
+            border-left: 1px solid var(--dark-mode-text);
+            border-right: 1px solid var(--dark-mode-text);
+            color: var(--dark-mode-text);
+            text-decoration: none;
+            transition: color 150ms ease-in, background 150ms ease-in;
+            & > svg {
+                width: 1.5rem;
+                height: 1.5rem;
+                margin-left: 0.2rem;
+                transition: fill 150ms ease-in;
+            }
+            &:hover {
+                color: var(--dark-mode-subtext);
+                background: var(--dark-mode-alt-fg);
+                transition: color 150ms ease-out, background 150ms ease-out;
+                & svg {
+                    fill: var(--dark-mode-subtext);
+                    transition: fill 150ms ease-out;
+                }
+            }
+        }
+    }
+}
+
+main {
+    margin-left: 5vh;
+    margin-right: 5vh;
+}
+
+.db-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    & > a > svg {
+        width: 2rem;
+        height: 2rem;
+        transition: fill 150ms ease-in;
+        &:hover {
+            fill: var(--dark-mode-subtext);
+            transition: fill 150ms ease-out;
+        }
+    }
+}
+main:has(.sign-up) {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+}
+
+.sign-up {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    background: var(--dark-mode-fg);
+    width: fit-content;
+    padding: 5em;
+    border-radius: 0.8rem;
+    & > h2 {
+        font-weight: normal;
+    }
+    & > button {
+        margin-top: 0.5rem;
+    }
+}
+
+input:is([type='text'], [type='password'], [type='email']) {
+    border: none;
+    border-radius: 0.3rem;
+    padding: 0.5rem;
+    background: var(--dark-mode-alt-fg);
+    color: var(--dark-mode-text);
+    font-size: 1rem;
+    outline-width: 0;
+    &::placeholder {
+        color: var(--dark-mode-subtext);
+    }
+}
+
+button {
+    border: none;
+    border-radius: 0.3rem;
+    padding: 0.4rem 2rem;
+    font-size: 1rem;
+    background: var(--dark-mode-alt-fg);
+    color: var(--dark-mode-text);
+    box-shadow: 0 0 4px #ccc4;
+    transition: color 150ms ease-in, background 150ms ease-in;
+    cursor: pointer;
+    &:hover {
+        background: var(--dark-mode-fg);
+    }
+}
+
+input,
+button {
+    font-family: Geist;
 }

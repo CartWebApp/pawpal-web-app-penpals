@@ -25,6 +25,22 @@ body {
     color: var(--dark-mode-text);
 }
 
+.hero {
+    background: url(./assets/hero.png) center / cover no-repeat;
+    object-fit: contain;
+    height: 80vh;
+    width: 100vw;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #eedeff;
+    text-shadow: 1px 1px 1px black;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 5rem;
+}
+
 nav {
     display: flex;
     justify-content: space-between;
@@ -69,8 +85,9 @@ nav {
         font-size: 1.2rem;
         &:open {
             justify-content: space-around;
-            margin-bottom: -9vh;
+            margin-bottom: -3vh;
             gap: 0.3rem;
+            padding-top: .5em;
         }
         & summary svg:last-child {
             transition: transform 150ms ease-in;

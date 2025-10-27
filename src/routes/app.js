@@ -860,10 +860,14 @@ async function prefetch_all_links() {
     await Promise.all(prefetches);
     for (const [url, nodes] of links) {
         for (const node of nodes) {
-            node.addEventListener('click', async event => {
-                event.preventDefault();
-                await navigate(url);
-            });
+            node.addEventListener(
+                'click',
+                async event => {
+                    event.preventDefault();
+                    await navigate(url);
+                },
+                { once: true }
+            );
             // @ts-expect-error
             node.__prefetched = true;
         }

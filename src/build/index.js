@@ -2,7 +2,6 @@
 import { readFile, readdir, writeFile, rm, mkdir, cp, stat } from 'fs/promises';
 import { cpSync, existsSync } from 'fs';
 import { join, parse } from 'path';
-import { compile, gather_dependencies } from './html.js';
 import { transform } from 'lightningcss';
 import { createHash } from 'crypto';
 import { rollup } from 'rollup';
@@ -26,25 +25,7 @@ export default async function build(dev = false) {
 
         await mkdir(join(process.cwd(), '.tmp'));
 
-        /** @type {Array<Dirent<string>>} */
-        const fragments = [];
-        /** @type {Array<Dirent<string>>} */
-        const pages = [];
-
-        for (const file of await readdir(
-            join(process.cwd(), 'src', 'fragments'),
-            {
-                recursive: true,
-                withFileTypes: true
-            }
-        )) {
-            if (!file.isFile()) continue;
-            const { ext } = parse(file.name);
-            if (ext !== '.html') {
-                continue;
-            }
-            fragments.push(file);
-        }
+        
 
         for (const file of await readdir(join(process.cwd(), 'src', 'routes'), {
             recursive: true,
@@ -52,77 +33,35 @@ export default async function build(dev = false) {
         })) {
             if (!file.isFile()) continue;
             const { ext } = parse(file.name);
-            if (ext !== '.html') {
-                const path = join(file.parentPath, file.name).replace(
-                    join(process.cwd(), 'src', 'routes'),
-                    join(process.cwd(), '.tmp')
-                );
-                if (!existsSync(path)) {
-                    await cp(join(file.parentPath, file.name), path, {
-                        recursive: true
-                    });
-                }
-                if (ext === '.css') {
-                    const transformed = transform({
-                        minify: true,
-                        code: await readFile(path),
-                        filename: join(file.parentPath, file.name)
-                    });
-                    await writeFile(path, transformed.code);
-                }
-                continue;
-            }
-            pages.push(file);
-        }
-
-        const modules = new Map();
-        for (const page of [...fragments, ...pages]) {
-            const path = join(page.parentPath, page.name);
-            const html = await readFile(path, 'utf-8');
-            modules.set(path, gather_dependencies(html));
-        }
-
-        // TODO find circular dependencies
-
-        for (const page of pages) {
-            const path = join(page.parentPath, page.name).replace(
+            const path = join(file.parentPath, file.name).replace(
                 join(process.cwd(), 'src', 'routes'),
                 join(process.cwd(), '.tmp')
             );
-            if (
-                !existsSync(
-                    page.parentPath.replace(
-                        join(process.cwd(), 'src', 'routes'),
-                        join(process.cwd(), '.tmp')
-                    )
-                )
-            ) {
-                await mkdir(
-                    page.parentPath.replace(
-                        join(process.cwd(), 'src', 'routes'),
-                        join(process.cwd(), '.tmp')
-                    ),
-                    { recursive: true }
-                );
+            if (!existsSync(path)) {
+                await cp(join(file.parentPath, file.name), path, {
+                    recursive: true
+                });
             }
-            await writeFile(
-                path,
-                compile(
-                    await readFile(join(page.parentPath, page.name), 'utf-8'),
-                    join(page.parentPath, page.name)
-                )
-            );
+            if (ext === '.css') {
+                const transformed = transform({
+                    minify: true,
+                    code: await readFile(path),
+                    filename: join(file.parentPath, file.name)
+                });
+                await writeFile(path, transformed.code);
+            }
+            if (ext === '.js') {
+                const bundle = await rollup({
+                    input: join(file.parentPath, file.name),
+                    ...rollup_config
+                });
+                await bundle.write({
+                    file: path,
+                    sourcemap: (dev && 'inline') || false
+                });
+            }
         }
-        if (existsSync(join(process.cwd(), 'src', 'app.js'))) {
-            const bundle = await rollup({
-                input: join(process.cwd(), 'src', 'app.js'),
-                ...rollup_config
-            });
-            await bundle.write({
-                file: join(process.cwd(), '.tmp', 'app.js'),
-                sourcemap: (dev && 'inline') || false
-            });
-        }
+
         if (existsSync(join(process.cwd(), 'src', 'netlify.toml'))) {
             cpSync(
                 join(process.cwd(), 'src', 'netlify.toml'),

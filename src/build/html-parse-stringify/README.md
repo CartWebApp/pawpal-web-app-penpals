@@ -1,2 +1,0 @@
-The code here was originally from the [html-parse-stringify](https://github.com/henrikjoreteg/html-parse-stringify) package. 
-Since it had incorrect types and some bugs, I cleaned it up and made it relatively typesafe. 

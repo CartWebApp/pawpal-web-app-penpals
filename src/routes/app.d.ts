@@ -65,3 +65,39 @@ export interface Fork {
      */
     with<T>(fn: () => T): T;
 }
+
+export interface User {
+    email: string;
+    password: string;
+    profile_image: string;
+    pets: Pet[];
+}
+
+type PetSpecies = 'dog' | 'cat' | 'bird' | 'fish' | 'turtle' | 'rabbit';
+type Metric = `${'k' | ''}g`;
+type Imperial = 'lb' | 'oz';
+
+export interface Pet {
+    name: string;
+    species: PetSpecies;
+    breed: string;
+    age: number;
+    images: {
+        hero: string;
+        icon: string;
+    }
+    weight: {
+        amount: number;
+        unit: Metric | Imperial;
+    }
+    medicines: Medicine[];
+}
+
+export interface Medicine {
+    name: string;
+    amount: number;
+    per: {
+        unit: 'day' | 'hour' | 'week';
+        interval: number;
+    }
+}

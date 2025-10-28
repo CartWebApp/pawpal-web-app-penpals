@@ -279,8 +279,9 @@ function sort_effects(effects) {
         if (a.parent === b.parent) {
             const { parent } = a;
             if ((parent.f & DERIVED) !== 0) {
-                const derived =
-                    /** @type {Derived & { effects: Effect[] }} */ (parent);
+                const derived = /** @type {Derived & { effects: Effect[] }} */ (
+                    parent
+                );
                 const a_index = derived.effects.indexOf(a);
                 const b_index = derived.effects.indexOf(b);
                 return a_index < b_index ? a : b;
@@ -497,6 +498,7 @@ function set(source, value) {
     return value;
 }
 
+/** @__NO_SIDE_EFFECTS__ */
 /**
  * @template T
  * @param {T} initial
@@ -516,6 +518,7 @@ function signal(initial) {
     ];
 }
 
+/** @__NO_SIDE_EFFECTS__ */
 /**
  * Creates a signal whose value is *derived* from other signals.
  * It takes `fn`, a pure function, and lazily reruns it when necessary.
@@ -678,3 +681,334 @@ function root(fn) {
     };
 }
 
+/**
+ * @param {string} html
+ * @returns {() => DocumentFragment}
+ */
+function template(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return () =>
+        /** @type {DocumentFragment} */ (template.content.cloneNode(true));
+}
+
+/** @type {Map<string, { title: string; body: () => DocumentFragment }>} */
+const page_cache = new Map();
+console.log(page_cache);
+/** @type {Map<string, Array<() => unknown>>} */
+const page_handlers = new Map();
+/** @type {Map<RegExp, Array<() => unknown>>} */
+const regex_page_handlers = new Map();
+/** @type {Array<() => unknown>} */
+let on_destroy_handlers = [];
+
+/**
+ * @param {string | string[] | RegExp | RegExp[]} paths
+ * @param {() => unknown} handler
+ */
+function page(paths, handler) {
+    if (Array.isArray(paths) && paths.every(path => path instanceof RegExp)) {
+        for (const path of paths) {
+            const handlers = regex_page_handlers.get(path) ?? [];
+            handlers.push(handler);
+            regex_page_handlers.set(path, handlers);
+        }
+        return;
+    } else if (typeof paths === 'object' && !Array.isArray(paths)) {
+        const handlers = regex_page_handlers.get(paths) ?? [];
+        handlers.push(handler);
+        regex_page_handlers.set(paths, handlers);
+        return;
+    }
+    if (Array.isArray(paths)) {
+        for (const path of paths) {
+            const handlers = page_handlers.get(path) ?? [];
+            handlers.push(handler);
+            page_handlers.set(path, handlers);
+        }
+    } else {
+        const handlers = page_handlers.get(paths) ?? [];
+        handlers.push(handler);
+        page_handlers.set(paths, handlers);
+    }
+}
+
+/**
+ * @param {string} url
+ */
+async function prefetch(url) {
+    const res = await fetch(url);
+    const text = await res.text();
+    const { title, body } = new DOMParser().parseFromString(text, 'text/html');
+    const frag = template(body.innerHTML);
+    page_cache.set(url, {
+        title,
+        body: frag
+    });
+}
+
+const view_transition = document.startViewTransition;
+/**
+ * @param {ViewTransitionUpdateCallback} fn
+ * @returns {ViewTransition}
+ */
+function maybe_view_transition(fn) {
+    if (typeof view_transition === 'function') {
+        return view_transition.call(document, fn);
+    }
+    let done = false;
+    /** @type {Promise<void>} */
+    const promise = new Promise(async resolve => {
+        if (done) {
+            resolve();
+            return;
+        }
+        await fn();
+        done = true;
+        resolve();
+    });
+    return /** @type {ViewTransition} */ ({
+        finished: promise,
+        updateCallbackDone: promise,
+        ready: promise
+    });
+}
+
+/**
+ * @param {string} url
+ */
+async function navigate(url) {
+    const { title, body } =
+        /** @type {NonNullable<ReturnType<typeof page_cache['get']>>} */ (
+            page_cache.get(url)
+        );
+    for (const handler of on_destroy_handlers) {
+        await handler();
+    }
+    on_destroy_handlers = [];
+    const transition = maybe_view_transition(() => {
+        history.pushState(url, '', url);
+        document.title = title;
+        const fragment = body();
+        set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
+        document.body.replaceChildren(fragment);
+    });
+    await transition.updateCallbackDone;
+    await transition.finished;
+    await init();
+}
+/**
+ * Renders the specified `url`.
+ * @param {string} url
+ */
+async function render(url) {
+    if (!page_cache.has(new URL(url, location.href).href)) {
+        await prefetch(new URL(url, location.href).href);
+    }
+    const { title, body } =
+        /** @type {NonNullable<ReturnType<typeof page_cache['get']>>} */ (
+            page_cache.get(new URL(url, location.href).href)
+        );
+    document.title = title;
+    const fragment = body();
+    set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
+    document.body.replaceChildren(fragment);
+}
+
+/**
+ * Redirects to the specified `url`.
+ * @param {string} url
+ * @param {boolean} [hard]
+ */
+async function redirect(url, hard = false) {
+    const { href, host } = new URL(url, location.href);
+    if (hard) {
+        // setting `location.href` on page load doesn't seem to work
+        queueMicrotask(() => {
+            location.href = href;
+        });
+        return;
+    }
+    if (!page_cache.has(href) && host === location.host) {
+        await prefetch(href);
+    }
+    await navigate(href);
+}
+
+// @ts-expect-error
+HTMLElement.prototype.__prefetched = false;
+async function prefetch_all_links() {
+    const to_prefetch = new Set();
+    /** @type {Map<string, Array<HTMLAnchorElement | HTMLAreaElement>>} */
+    const links = new Map();
+    for (const link of document.links) {
+        if (new URL(link.href, location.href).host !== location.host) {
+            continue;
+        }
+        // @ts-expect-error
+        if (link.__prefetched) {
+            continue;
+        }
+        if (!page_cache.has(link.href)) {
+            to_prefetch.add(link.href);
+        }
+        const arr = links.get(link.href) ?? [];
+        arr.push(link);
+        links.set(link.href, arr);
+    }
+    const prefetches = [...to_prefetch].map(url => prefetch(url));
+    await Promise.all(prefetches);
+    for (const [url, nodes] of links) {
+        for (const node of nodes) {
+            node.addEventListener(
+                'click',
+                async event => {
+                    event.preventDefault();
+                    await navigate(url);
+                },
+                { once: true }
+            );
+            // @ts-expect-error
+            node.__prefetched = true;
+        }
+    }
+}
+
+async function init() {
+    await prefetch_all_links();
+    const handlers = page_handlers.get(location.pathname);
+    if (handlers !== undefined) {
+        for (const handler of handlers) {
+            await handler();
+        }
+    }
+    for (const [regex, handlers] of regex_page_handlers) {
+        if (!regex.test(location.pathname)) {
+            continue;
+        }
+        for (const handler of handlers) {
+            await handler();
+        }
+    }
+    await prefetch_all_links();
+}
+
+/**
+ * @param {() => unknown} fn
+ */
+function on_destroy(fn) {
+    on_destroy_handlers.push(fn);
+}
+
+const [logged_in, set_logged_in] = signal(
+    (localStorage.logged_in ??= 'false') === 'true'
+);
+window.addEventListener('storage', e => {
+    if (e.storageArea !== localStorage) {
+        return;
+    }
+    if (e.key === 'logged_in') {
+        set_logged_in(localStorage.logged_in === 'true');
+    }
+});
+
+/**
+ * @template {EventTarget} T
+ * @template {keyof HTMLElementEventMap | never} E
+ * @param {T} target
+ * @param {T extends HTMLElement ? E : string} event
+ * @param {T extends HTMLElement ? E extends keyof HTMLElementEventMap ? (this: T, event: HTMLElementEventMap[E]) => void : (this: T, event: Event) => void : (this: T, event: Event) => void} handler
+ */
+function on(target, event, handler) {
+    // @ts-expect-error
+    target.addEventListener(event, handler);
+    on_destroy(() => {
+        // @ts-expect-error
+        target.removeEventListener(event, handler);
+    });
+}
+
+let [nav, set_nav] = signal(
+    /** @type {HTMLElement} */ (document.querySelector('nav'))
+);
+const sign_up = template('<a href="/sign-up/">Sign Up</a>');
+const clone = template(
+    `<details>
+    <summary>
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="#555" xmlns="http://www.w3.org/2000/svg">
+            <circle r="24" cx="24" cy="24" />
+        </svg>
+        Account
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 18L24 30L36 18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </summary>
+    <a href="/">
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#fff">
+            <path d="M220-180h150v-250h220v250h150v-390L480-765 220-570v390Zm-60 60v-480l320-240 320 240v480H530v-250H430v250H160Zm320-353Z"/>
+        </svg>
+        Dashboard
+    </a>
+    <a href="/settings">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="48px"
+            viewBox="0 -960 960 960"
+            width="48px"
+            fill="#fff"
+        >
+            <path
+                d="m388-80-20-126q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"
+            />
+        </svg>
+        Settings
+    </a>
+</details>`
+);
+function account_dropdown() {
+    const fragment = clone();
+    const details = /** @type {HTMLDetailsElement} */ (fragment.firstChild);
+    on(document.body, 'click', e => {
+        if (details.open && !e.composedPath().includes(details)) {
+            details.open = false;
+        }
+    });
+    return details;
+}
+effect(() => {
+    const child = /** @type {HTMLElement} */ (nav().lastElementChild);
+    if (logged_in()) {
+        child.replaceWith(account_dropdown());
+    } else {
+        child.replaceWith(sign_up());
+    }
+});
+
+page('/', () => {
+    const home_page = /** @type {HTMLTemplateElement} */ (
+        document.querySelector('.homepage')
+    );
+    const dashboard = /** @type {HTMLTemplateElement} */ (
+        document.querySelector('.dashboard')
+    );
+    const main = /** @type {HTMLElement} */ (document.querySelector('main'));
+    if (logged_in()) {
+        main.append(dashboard.content.cloneNode(true));
+    } else {
+        main.append(home_page.content.cloneNode(true));
+    }
+});
+
+page('/settings', async () => {
+    if (!logged_in()) {
+        await redirect('/sign-up', true);
+    }
+});
+
+page(/^\/pet\/[0-9]+$/, async () => {
+    if (!logged_in()) {
+        await render('/404');
+    }
+});
+
+await init();

@@ -28,6 +28,7 @@ body {
 .hero {
     background: url(./assets/hero.png) center / cover no-repeat;
     object-fit: contain;
+    background-size: contain;
     height: 80vh;
     width: 100vw;
     font-size: 3rem;

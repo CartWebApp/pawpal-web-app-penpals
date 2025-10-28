@@ -1,4 +1,4 @@
-/** @import { Source, Reaction, Derived, Effect, Fork } from './app.js' */
+/** @import { Source, Reaction, Derived, Effect, Fork, Signal } from './app.js' */
 /// <reference lib="es2023" />
 // @ts-check
 const DIRTY = 1 << 1;
@@ -502,7 +502,7 @@ function set(source, value) {
 /**
  * @template T
  * @param {T} initial
- * @returns {[() => T, (v: T | ((v: T) => T)) => T]}
+ * @returns {Signal<T>}
  */
 function signal(initial) {
     const s = source(initial);
@@ -694,14 +694,22 @@ function template(html) {
 
 /** @type {Map<string, { title: string; body: () => DocumentFragment }>} */
 const page_cache = new Map();
-console.log(page_cache);
+
 /** @type {Map<string, Array<() => unknown>>} */
 const page_handlers = new Map();
 /** @type {Map<RegExp, Array<() => unknown>>} */
 const regex_page_handlers = new Map();
 /** @type {Array<() => unknown>} */
 let on_destroy_handlers = [];
-
+/**
+ * @returns {[() => number, () => number]}
+ */
+function create_version() {
+    const [version, set_version] = signal(0);
+    return [version, () => set_version(v => v + 1)];
+}
+const [url_version, increment_url_version] = create_version();
+const url = derived(() => (url_version(), { ...location }));
 /**
  * @param {string | string[] | RegExp | RegExp[]} paths
  * @param {() => unknown} handler
@@ -792,6 +800,7 @@ async function navigate(url) {
         const fragment = body();
         set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
         document.body.replaceChildren(fragment);
+        increment_url_version();
     });
     await transition.updateCallbackDone;
     await transition.finished;
@@ -899,7 +908,7 @@ async function init() {
 function on_destroy(fn) {
     on_destroy_handlers.push(fn);
 }
-
+const [user, set_user] = signal((localStorage.user ??= JSON.stringify(null)));
 const [logged_in, set_logged_in] = signal(
     (localStorage.logged_in ??= 'false') === 'true'
 );
@@ -977,7 +986,7 @@ function account_dropdown() {
 }
 effect(() => {
     const child = /** @type {HTMLElement} */ (nav().lastElementChild);
-    if (logged_in()) {
+    if (user()) {
         child.replaceWith(account_dropdown());
     } else {
         child.replaceWith(sign_up());
@@ -996,7 +1005,17 @@ page('/', () => {
         main.append(dashboard.content.cloneNode(true));
     } else {
         main.append(home_page.content.cloneNode(true));
+        main.style.setProperty('margin', '0');
     }
+});
+
+page('/sign-up', () => {
+    const form = /** @type {HTMLFormElement} */ (
+        document.querySelector('form')
+    );
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+    });
 });
 
 page('/settings', async () => {

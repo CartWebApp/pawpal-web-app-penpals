@@ -66,6 +66,11 @@ export interface Fork {
     with<T>(fn: () => T): T;
 }
 
+export type Signal<T = void> = [
+    () => T,
+    (value: T | ((current: T) => T)) => T
+]
+
 export interface User {
     email: string;
     password: string;
@@ -100,4 +105,9 @@ export interface Medicine {
         unit: 'day' | 'hour' | 'week';
         interval: number;
     }
+}
+
+export interface Reminder {
+    type: string; // TODO specify
+    time: number;
 }

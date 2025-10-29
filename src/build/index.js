@@ -10,9 +10,10 @@ import rollup_config from '../../rollup.config.js';
 let running = false;
 
 /**
+ * @param {string} [dir]
  * @param {boolean} [dev]
  */
-export default async function build(dev = false) {
+export default async function build(dir = 'routes', dev = false) {
     // we treat this as a semaphore to avoid rerunning when a build hasn't completed
     // which can lead to errors (e.g. `.tmp` folder gets deleted by new build, while old build is still copying files over)
     if (running) {
@@ -27,14 +28,14 @@ export default async function build(dev = false) {
 
         
 
-        for (const file of await readdir(join(process.cwd(), 'src', 'routes'), {
+        for (const file of await readdir(join(process.cwd(), 'src', dir), {
             recursive: true,
             withFileTypes: true
         })) {
             if (!file.isFile()) continue;
             const { ext } = parse(file.name);
             const path = join(file.parentPath, file.name).replace(
-                join(process.cwd(), 'src', 'routes'),
+                join(process.cwd(), 'src', dir),
                 join(process.cwd(), '.tmp')
             );
             if (!existsSync(path)) {

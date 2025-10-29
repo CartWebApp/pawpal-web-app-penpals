@@ -3,7 +3,8 @@ import { createServer } from 'vite';
 import { join, parse, sep } from 'path';
 import { watch } from 'chokidar';
 import build_netlify_middleware from './netlify.js';
-await build(true);
+const ROUTES = 'desktop';
+await build(ROUTES, true);
 let queued = false;
 watch(join(process.cwd(), 'src')).on('change', path => {
     // if the file changed was in `build`, don't queue a rebuild
@@ -18,7 +19,7 @@ watch(join(process.cwd(), 'src')).on('change', path => {
         queueMicrotask(async () => {
             queued = false;
             try {
-                await build(true);
+                await build(ROUTES, true);
             } catch (err) {
                 const error = /** @type {Error} */ (err);
                 server.hot.send({

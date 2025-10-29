@@ -96,6 +96,7 @@ export interface Pet {
         unit: Metric | Imperial;
     }
     medicines: Medicine[];
+    reminders: Reminder[];
 }
 
 export interface Medicine {
@@ -110,4 +111,5 @@ export interface Medicine {
 export interface Reminder {
     type: string; // TODO specify
     time: number;
+    details: string;
 }

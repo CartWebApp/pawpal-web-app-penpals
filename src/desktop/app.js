@@ -1,4 +1,4 @@
-/** @import { Source, Reaction, Derived, Effect, Fork, Signal } from './app.js' */
+/** @import { Source, Reaction, Derived, Effect, Fork, Signal, User } from './app.js' */
 /// <reference lib="es2023" />
 // @ts-check
 const DIRTY = 1 << 1;
@@ -701,6 +701,7 @@ const page_handlers = new Map();
 const regex_page_handlers = new Map();
 /** @type {Array<() => unknown>} */
 let on_destroy_handlers = [];
+const redirect_error = {};
 /**
  * @returns {[() => number, () => number]}
  */
@@ -730,14 +731,28 @@ function page(paths, handler) {
     }
     if (Array.isArray(paths)) {
         for (const path of paths) {
-            const handlers = page_handlers.get(path) ?? [];
+            const no_trailing_slash = path.replace(/.+\/$/, m =>
+                m.slice(0, -1)
+            );
+            const trailing_slash = no_trailing_slash + (path === '/' ? '' : '/');
+            const handlers = page_handlers.get(no_trailing_slash) ?? [];
             handlers.push(handler);
-            page_handlers.set(path, handlers);
+            page_handlers.set(no_trailing_slash, handlers);
+            if (path === '/') continue;
+            const handlers_ = page_handlers.get(trailing_slash) ?? [];
+            handlers_.push(handler);
+            page_handlers.set(trailing_slash, handlers_);
         }
     } else {
-        const handlers = page_handlers.get(paths) ?? [];
+        const no_trailing_slash = paths.replace(/.+\/$/, m => m.slice(0, -1));
+        const trailing_slash = no_trailing_slash + (paths === '/' ? '' : '/');
+        const handlers = page_handlers.get(no_trailing_slash) ?? [];
         handlers.push(handler);
-        page_handlers.set(paths, handlers);
+        page_handlers.set(no_trailing_slash, handlers);
+        if (paths === '/') return;
+        const handlers_ = page_handlers.get(trailing_slash) ?? [];
+        handlers_.push(handler);
+        page_handlers.set(trailing_slash, handlers_);
     }
 }
 
@@ -785,7 +800,7 @@ function maybe_view_transition(fn) {
 /**
  * @param {string} url
  */
-async function navigate(url) {
+async function goto_prefetched(url) {
     const { title, body } =
         /** @type {NonNullable<ReturnType<typeof page_cache['get']>>} */ (
             page_cache.get(url)
@@ -822,14 +837,15 @@ async function render(url) {
     const fragment = body();
     set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
     document.body.replaceChildren(fragment);
+    throw redirect_error;
 }
 
 /**
- * Redirects to the specified `url`.
+ * Navigates to the specified `url`.
  * @param {string} url
  * @param {boolean} [hard]
  */
-async function redirect(url, hard = false) {
+async function goto(url, hard = false) {
     const { href, host } = new URL(url, location.href);
     if (hard) {
         // setting `location.href` on page load doesn't seem to work
@@ -841,7 +857,8 @@ async function redirect(url, hard = false) {
     if (!page_cache.has(href) && host === location.host) {
         await prefetch(href);
     }
-    await navigate(href);
+    await goto_prefetched(href);
+    throw redirect_error;
 }
 
 // @ts-expect-error
@@ -873,7 +890,7 @@ async function prefetch_all_links() {
                 'click',
                 async event => {
                     event.preventDefault();
-                    await navigate(url);
+                    await goto_prefetched(url);
                 },
                 { once: true }
             );
@@ -884,22 +901,28 @@ async function prefetch_all_links() {
 }
 
 async function init() {
-    await prefetch_all_links();
-    const handlers = page_handlers.get(location.pathname);
-    if (handlers !== undefined) {
-        for (const handler of handlers) {
-            await handler();
+    try {
+        await prefetch_all_links();
+        const handlers = page_handlers.get(location.pathname);
+        if (handlers !== undefined) {
+            for (const handler of handlers) {
+                await handler();
+            }
+        }
+        for (const [regex, handlers] of regex_page_handlers) {
+            if (!regex.test(location.pathname)) {
+                continue;
+            }
+            for (const handler of handlers) {
+                await handler();
+            }
+        }
+        await prefetch_all_links();
+    } catch(err) {
+        if (err !== redirect_error) {
+            throw err;
         }
     }
-    for (const [regex, handlers] of regex_page_handlers) {
-        if (!regex.test(location.pathname)) {
-            continue;
-        }
-        for (const handler of handlers) {
-            await handler();
-        }
-    }
-    await prefetch_all_links();
 }
 
 /**
@@ -908,16 +931,40 @@ async function init() {
 function on_destroy(fn) {
     on_destroy_handlers.push(fn);
 }
-const [user, set_user] = signal((localStorage.user ??= JSON.stringify(null)));
-const [logged_in, set_logged_in] = signal(
-    (localStorage.logged_in ??= 'false') === 'true'
+
+/**
+ * @template T
+ * @param {() => T} getter
+ * @param {(value: T) => void} setter
+ * @returns {Signal<T>}
+ */
+function signal_from(getter, setter) {
+    const [get, set] = signal(getter());
+    /**
+     * @param {T | ((current: T) => T)} value
+     */
+    function _set(value) {
+        setter(
+            typeof value === 'function'
+                ? /** @type {(current: T) => T} */ (value)(untrack(getter))
+                : value
+        );
+        set(value);
+        return untrack(getter);
+    }
+    return [get, _set];
+}
+/** @type {Signal<User | null>} */
+const [user, set_user] = signal_from(
+    () => JSON.parse((localStorage.user ??= JSON.stringify(null))),
+    value => (localStorage.user = JSON.stringify(value))
 );
 window.addEventListener('storage', e => {
     if (e.storageArea !== localStorage) {
         return;
     }
-    if (e.key === 'logged_in') {
-        set_logged_in(localStorage.logged_in === 'true');
+    if (e.key === 'user' && e.newValue !== JSON.stringify(user())) {
+        set_user(JSON.parse(e.newValue ?? 'null'));
     }
 });
 
@@ -986,7 +1033,7 @@ function account_dropdown() {
 }
 effect(() => {
     const child = /** @type {HTMLElement} */ (nav().lastElementChild);
-    if (user()) {
+    if (user() !== null) {
         child.replaceWith(account_dropdown());
     } else {
         child.replaceWith(sign_up());
@@ -1001,7 +1048,7 @@ page('/', () => {
         document.querySelector('.dashboard')
     );
     const main = /** @type {HTMLElement} */ (document.querySelector('main'));
-    if (logged_in()) {
+    if (user() !== null) {
         main.append(dashboard.content.cloneNode(true));
     } else {
         main.append(home_page.content.cloneNode(true));
@@ -1009,23 +1056,41 @@ page('/', () => {
     }
 });
 
-page('/sign-up', () => {
+page('/sign-up', async () => {
+    if (user() !== null) {
+        await goto('/');
+    }
     const form = /** @type {HTMLFormElement} */ (
         document.querySelector('form')
     );
-    form.addEventListener('submit', e => {
+    const email = /** @type {HTMLInputElement} */ (
+        document.querySelector('input[type=email]')
+    );
+    const password = /** @type {HTMLInputElement} */ (
+        document.querySelector('input[type=password]')
+    );
+    form.addEventListener('submit', async e => {
+        if (email.validity.valid && password.validity.valid) {
+            set_user({
+                email: email.value,
+                password: password.value,
+                profile_image: '',
+                pets: []
+            });
+            await goto('/');
+        }
         e.preventDefault();
     });
 });
 
 page('/settings', async () => {
-    if (!logged_in()) {
-        await redirect('/sign-up', true);
+    if (user() === null) {
+        await goto('/sign-up', true);
     }
 });
 
 page(/^\/pet\/[0-9]+$/, async () => {
-    if (!logged_in()) {
+    if (user() === null) {
         await render('/404');
     }
 });

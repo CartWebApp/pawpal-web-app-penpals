@@ -15,9 +15,21 @@
         <main>
             <form class="sign-up">
                 <h2>Sign Up</h2>
-                <input type="email" placeholder="Enter your email address" />
-                <input type="password" placeholder="Enter your password" />
-                <button>Join</button>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email address"
+                    autocomplete="email"
+                    required
+                />
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="new-password"
+                    required
+                />
+                <button class="join" type="submit">Join</button>
             </form>
         </main>
     </body>

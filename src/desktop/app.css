@@ -93,7 +93,7 @@ nav {
         }
         &:open {
             justify-content: space-around;
-            margin-bottom: -6.9vh;
+            margin-bottom: -4.2rem;
             gap: 0.3rem;
             padding-top: 0.25rem;
         }
@@ -111,6 +111,8 @@ nav {
             align-content: center;
             align-items: center;
             justify-content: space-between;
+            position: sticky;
+            outline-width: 0;
             gap: 0.3rem;
             & > :is(svg, img) {
                 width: 1.5rem;
@@ -176,6 +178,36 @@ main {
     justify-content: space-between;
     align-items: center;
     align-content: center;
+    & > h2 {
+        display: flex;
+        justify-content: space-between;
+        align-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        & > a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+        & > a > svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        & > a > :is(svg, svg > *) {
+            cursor: pointer;
+            & > rect:not(:first-child) {
+                fill: var(--dark-mode-bg);
+            }
+            & > rect:first-child {
+                transition: fill 150ms ease-in;
+                :is(:hover > &, &:hover) {
+                    fill: var(--dark-mode-subtext);
+                    transition: fill 150ms ease-out;
+                }
+            }
+        }
+    }
     & > a > svg {
         width: 2rem;
         height: 2rem;
@@ -194,6 +226,35 @@ main:has(.sign-up) {
     align-items: center;
     justify-content: center;
     height: 90vh;
+}
+
+main.error {
+    background: var(--dark-mode-fg);
+    width: 50vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    margin: 20vh auto 0 auto !important;
+    border-radius: 1rem;
+    & > h1 {
+        font-size: 5rem;
+        margin-bottom: 0;
+    }
+    & > p {
+        margin-bottom: 5rem;
+        text-align: center;
+        color: var(--dark-mode-subtext);
+        & a {
+            text-decoration: underline 0.01rem transparent;
+            color: var(--dark-mode-text);
+            transition: text-decoration-color 150ms ease-in;
+            &:hover {
+                text-decoration-color: var(--dark-mode-text);
+                transition: text-decoration-color 150ms ease-out;
+            }
+        }
+    }
 }
 
 .sign-up {

@@ -1,2 +1,5 @@
 User-Agent: *
-Disallow: 
+Disallow: /settings/
+Disallow: /sign-up/
+Disallow: /pet/
+Disallow: /new-pet/

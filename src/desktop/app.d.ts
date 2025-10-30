@@ -197,6 +197,11 @@ type KVMediaQueryProperties = DimensionalMediaQueryProperties<{
     'prefers-reduced-motion': 'no-preference' | 'reduce';
     'prefers-reduced-transparency': 'no-preference' | 'reduce';
     resolution: string;
+    scan: 'interlace' | 'progressive';
+    scripting: 'none' | 'initial-only' | 'enabled';
+    update: 'none' | 'slow' | 'fast';
+    'vertical-viewport-segments': `${bigint}`;
+    'video-dynamic-range': 'standard' | 'high';
     width: CSSDimensionalProperty;
 }>;
 
@@ -207,7 +212,7 @@ type KVMediaQuery = {
 }[keyof KVMediaQueryProperties];
 
 type DisplayMediaQuery = 'screen' | 'print' | 'any';
-type MediaQueryLogicalOperator = 'and' | 'not' | 'or';
+type MediaQueryLogicalOperator = 'and' | 'or' | ',';
 type MaybeParens<T extends string> = T | `(${T})`;
 type MediaQueryOperand = MaybeParens<KVMediaQuery> | DimensionalMediaQuery;
 type IsEndMediaQuery<T extends string> = T extends MediaQueryOperand
@@ -223,9 +228,9 @@ export type IsMediaQuery<T extends string> = T extends MediaQueryOperand
     ? true
     : T extends MaybeParens<`${MediaQueryOperand} ${MediaQueryLogicalOperator} ${infer Part}`>
     ? IsEndMediaQuery<Part>
-    : T extends `${
+    : T extends `${'not ' | ''}${
           | MediaQueryOperand
           | DisplayMediaQuery} ${MediaQueryLogicalOperator} ${infer Part}`
     ? IsEndMediaQuery<Part>
     : false;
-type test = IsMediaQuery<'(width: 50) and (width >= 5) not (width <= 5)'>;
+type test = IsMediaQuery<'(vertical-viewport-segments: 0) and (width >= 5) and not (width <= 5)'>;

@@ -139,8 +139,8 @@ nav {
             align-items: center;
             justify-content: flex-start;
             gap: 0.8vw;
-            padding: 0.3rem 1rem 0.3rem 0rem;
-            margin-left: -0.5rem;
+            padding: 0.3rem 0.5rem 0.3rem 0rem;
+            margin-left: -0.1rem;
             color: var(--dark-mode-text);
             text-decoration: none;
             transition: color 150ms ease-in, background 150ms ease-in;
@@ -254,6 +254,15 @@ main.error {
                 transition: text-decoration-color 150ms ease-out;
             }
         }
+    }
+}
+
+main[url ^= '/new-pet'] {
+    & > h2 {
+        font-weight: 500;
+    }
+    & > section {
+        margin-left: 2vw;
     }
 }
 

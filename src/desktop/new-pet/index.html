@@ -14,12 +14,30 @@
         </nav>
         <main>
             <h2>Create a Pet Profile</h2>
-            <section class="species">
-                <h3>Species</h3>
-            </section>
-            <section>
-                
-            </section>
+            <form>
+                <section class="inputs">
+                    <div class="species">
+                        <h3>Species</h3>
+                    </div>
+                    <label for="breed">Breed</label
+                    ><input type="text" name="breed" />
+                    <label for="name">Name</label
+                    ><input type="text" name="name" />
+                    <label for="age">Age</label
+                    ><input type="number" min="0" name="age" />
+                    <label for="weight">Weight</label>
+                    <div class="weight-input">
+                        <input type="number" min="0" name="weight" />
+                        <select class="weight-unit">
+                            <option value="kg">kg</option>
+                            <option value="lb">lb</option>
+                        </select>
+                    </div>
+                </section>
+                <section class="image">
+                    <input type="image" />
+                </section>
+            </form>
         </main>
     </body>
 </html>

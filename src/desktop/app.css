@@ -261,8 +261,15 @@ main[url ^= '/new-pet'] {
     & > h2 {
         font-weight: 500;
     }
-    & > section {
+    & > form {
         margin-left: 2vw;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        & > :first-child {
+            display: grid;
+            
+        }
     }
 }
 

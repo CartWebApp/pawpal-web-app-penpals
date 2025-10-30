@@ -720,6 +720,18 @@ const url = derived(() => (url_version(), { ...location }));
  * @param {() => unknown} handler
  */
 function page(paths, handler) {
+    /**
+     * @template K
+     * @template V
+     * @param {Map<K, V[]>} map
+     * @param {K} key
+     * @param {V} handler
+     */
+    function add(map, key, handler) {
+        const handlers = map.get(key) ?? [];
+        handlers.push(handler);
+        map.set(key, handlers);
+    }
     if (Array.isArray(paths) && paths.every(path => path instanceof RegExp)) {
         for (const path of paths) {
             const handlers = regex_page_handlers.get(path) ?? [];
@@ -740,24 +752,20 @@ function page(paths, handler) {
             );
             const trailing_slash =
                 no_trailing_slash + (path === '/' ? '' : '/');
-            const handlers = page_handlers.get(no_trailing_slash) ?? [];
-            handlers.push(handler);
-            page_handlers.set(no_trailing_slash, handlers);
+            const with_index_html = trailing_slash + 'index.html';
+            add(page_handlers, no_trailing_slash, handler);
+            add(page_handlers, with_index_html, handler);
             if (path === '/') continue;
-            const handlers_ = page_handlers.get(trailing_slash) ?? [];
-            handlers_.push(handler);
-            page_handlers.set(trailing_slash, handlers_);
+            add(page_handlers, trailing_slash, handler);
         }
     } else {
         const no_trailing_slash = paths.replace(/.+\/$/, m => m.slice(0, -1));
         const trailing_slash = no_trailing_slash + (paths === '/' ? '' : '/');
-        const handlers = page_handlers.get(no_trailing_slash) ?? [];
-        handlers.push(handler);
-        page_handlers.set(no_trailing_slash, handlers);
+        const with_index_html = trailing_slash + 'index.html';
+        add(page_handlers, no_trailing_slash, handler);
+        add(page_handlers, with_index_html, handler);
         if (paths === '/') return;
-        const handlers_ = page_handlers.get(trailing_slash) ?? [];
-        handlers_.push(handler);
-        page_handlers.set(trailing_slash, handlers_);
+        add(page_handlers, trailing_slash, handler);
     }
 }
 
@@ -1033,6 +1041,7 @@ function media_query(query) {
 const [nav, set_nav] = signal(
     /** @type {HTMLElement} */ (document.querySelector('nav'))
 );
+
 const main = derived(
     () => (
         url_version(),
@@ -1082,6 +1091,7 @@ const clone = template(
     </a>
 </details>`
 );
+
 function account_dropdown() {
     const fragment = clone();
     const details = /** @type {HTMLDetailsElement} */ (fragment.firstChild);
@@ -1098,6 +1108,7 @@ function account_dropdown() {
     });
     return details;
 }
+
 effect(() => {
     const child = /** @type {HTMLElement} */ (nav().lastElementChild);
     if (user() !== null) {

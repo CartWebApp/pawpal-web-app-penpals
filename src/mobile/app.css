@@ -39,11 +39,11 @@ body {
     flex-direction: column;
     align-items:center;
     justify-content: space-between;
-    padding-left: 0rem;
+    padding-left: 1rem;
     padding-top: 1rem;
     background-size: cover;
     border-radius: 1rem;
-    margin-right: 0rem;
+    margin-left: 2rem;
     margin-top: 2rem;
 }
 
@@ -189,11 +189,12 @@ main:has(.sign-up) {
     flex-direction: column;
     align-items: center;
     align-content: center;
-    gap: 0.5rem;
+    gap: 3rem;
     background: var(--dark-mode-fg);
     width: fit-content;
-    padding: 5em;
+    padding: 4em;
     border-radius: 2rem;
+    height: 30rem ;
     & > h2 {
         font-weight: normal;
     }
@@ -201,6 +202,7 @@ main:has(.sign-up) {
         margin-top: 0.5rem;
     }
 }
+
 
 input:is([type='text'], [type='password'], [type='email']) {
     border: none;

@@ -257,21 +257,65 @@ main.error {
     }
 }
 
-main[url ^= '/new-pet'] {
+main:has(form) {
     & > h2 {
         font-weight: 500;
     }
     & > form {
-        margin-left: 2vw;
+        margin-left: 1vw;
+        margin-right: 2vw;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
         & > :first-child {
             display: grid;
-            
+            grid-template: 1fr 1fr 1fr / repeat(auto, 2rem);
+            align-items: center;
+            gap: 0.4rem 1rem;
+            & label {
+                font-size: 1.2rem;
+                grid-column: 1 / 1;
+            }
+            & :not(label) {
+                grid-column: 2 / 2;
+                &[type=number] {
+                    width: 2rem;
+                    &::-webkit-inner-spin-button, &::-webkit-outer-spin-button {
+                        opacity: 1;
+                    }
+                }
+            }
+            & .species {
+                grid-column: 1 / 2;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                & h3 {
+                    align-self: flex-start;
+                }
+                & ul {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 0.5rem;
+                    & li {
+                        list-style: none;
+                        background: var(--dark-mode-fg);
+                        border-radius: 0.4rem;
+                        padding: 0.4rem;
+                        width: 3rem;
+                        height: 3rem;
+                        & input {
+                            appearance: none;
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 }
+
 
 .sign-up {
     display: flex;
@@ -291,7 +335,7 @@ main[url ^= '/new-pet'] {
     }
 }
 
-input:is([type='text'], [type='password'], [type='email']) {
+input:is([type='text'], [type='password'], [type='email'], [type='number']) {
     border: none;
     border-radius: 0.3rem;
     padding: 0.5rem;

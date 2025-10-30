@@ -734,15 +734,11 @@ function page(paths, handler) {
     }
     if (Array.isArray(paths) && paths.every(path => path instanceof RegExp)) {
         for (const path of paths) {
-            const handlers = regex_page_handlers.get(path) ?? [];
-            handlers.push(handler);
-            regex_page_handlers.set(path, handlers);
+            add(regex_page_handlers, path, handler);
         }
         return;
     } else if (typeof paths === 'object' && !Array.isArray(paths)) {
-        const handlers = regex_page_handlers.get(paths) ?? [];
-        handlers.push(handler);
-        regex_page_handlers.set(paths, handlers);
+        add(regex_page_handlers, paths, handler);
         return;
     }
     if (Array.isArray(paths)) {

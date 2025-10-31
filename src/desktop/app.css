@@ -429,12 +429,48 @@ button {
     font-family: Geist;
 }
 
+.pets-carousel {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-rows: 1;
+}
+
 .pet-item {
     background: var(--dark-mode-fg);
     border-radius: 0.3rem;
     display: flex;
+    flex-direction: column;
     justify-content: space-around;
-    align-content: center;
+    align-items: center;
+    width: 10rem;
+    height: 10rem;
+    border-radius: 0.5rem;
+    padding: 1rem 0.1rem 0.1rem 0.1rem;
+    transition: background 150ms ease-in;
+    & > p {
+        color: white;
+        align-self: flex-start;
+        margin-left: 1.5rem;
+        margin-top: 0;
+        font-size: 1.5rem;
+    }
+    & > img {
+        width: 7rem;
+        height: 5rem;
+        border-radius: 0.2rem;
+        overflow: hidden;
+        object-fit: cover;
+        margin-bottom: 0;
+    }
+    &:hover {
+        background: var(--dark-mode-alt-fg);
+        transition: background 150ms ease-out;
+    }
+}
+
+a:has(.pet-item) {
+    text-decoration: none;
+    width: 10rem;
 }
 
 @keyframes pulse {

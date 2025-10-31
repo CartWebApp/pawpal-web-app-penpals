@@ -231,7 +231,7 @@ main:has(.sign-up) {
     align-content: center;
     align-items: center;
     justify-content: center;
-    height: 90vh;
+    height: 80vh;
 }
 
 main.error {
@@ -370,14 +370,19 @@ main:has(form) {
     width: fit-content;
     padding: 4em;
     border-radius: 2rem;
-    height: 30rem ;
+    height: 30rem;
+    margin-top: 3rem;
     & > h2 {
         font-weight: normal;
     }
     & > button {
-        margin-top: 0.5rem;
+        margin-top: 4rem;
     }
     
+}
+
+img {
+    transform: translateY(3rem);
 }
 
 input:is([type='text'], [type='password'], [type='email'], [type='number']) {
@@ -460,3 +465,16 @@ button {
     width: 9.6em;
     height: 2.4em;
 }
+
+.pet-hero-skeleton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    margin-left: 0;
+    margin-top: 2rem;
+    background-color:#242442;
+    border-radius: 1rem;
+    height: 20rem;
+}
+

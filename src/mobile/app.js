@@ -1,5 +1,4 @@
 /** @import { Source, Reaction, Derived, Effect, Fork, Signal, User, Reminder, IsMediaQuery } from './app.js' */
-/** @import * as CSSType from 'csstype' */
 /// <reference lib="es2023" />
 // @ts-check
 const DIRTY = 1 << 1;
@@ -49,8 +48,7 @@ const DISCONNECTED_EFFECT = 1 << 6;
  *     effect
  * ```
  * However, there's also an effect tree, created when effects are nested.
- * Reactions are stack-based, and effects are themselves
- * nodes in a tree of linked lists.
+ * Each level of depth in the effect tree is a linked list.
  * e.g.
  * ```js
  * effect(() => {
@@ -689,7 +687,7 @@ function root(fn) {
  * @returns {() => DocumentFragment}
  */
 function template(html) {
-    const template = document.createElement('template');
+    const template = element('template');
     template.innerHTML = html;
     return () =>
         /** @type {DocumentFragment} */ (template.content.cloneNode(true));
@@ -700,12 +698,21 @@ const page_cache = new Map();
 
 /** @type {Map<string, Array<() => unknown>>} */
 const page_handlers = new Map();
+
 /** @type {Map<RegExp, Array<() => unknown>>} */
 const regex_page_handlers = new Map();
+
 /** @type {Array<() => unknown>} */
 let on_destroy_handlers = [];
+
 /** An error to be thrown in e.g. `goto` to avoid further execution of `page` handlers */
 const redirect_error = {};
+/** `true` when a navigation is in progress. */
+let navigating = false;
+/** `true` when prefetching a link. */
+let prefetching = false;
+
+/** @__NO_SIDE_EFFECTS__ */
 /**
  * @returns {[() => number, () => number]}
  */
@@ -713,9 +720,65 @@ function create_version() {
     const [version, set_version] = signal(0);
     return [version, () => set_version(v => v + 1)];
 }
+
+/** @__NO_SIDE_EFFECTS__ */
+/**
+ * @template {(...args: any[]) => any} T
+ * @param {T} fn
+ * @returns {(this_arg: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>}
+ */
+function call_bind(fn) {
+    return /** @type {(this_arg: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>} */ (
+        fn.call.bind(fn)
+    );
+}
+
+// cache prototype methods / globals to improve inlining / inline caching
+const add_event_listener = call_bind(EventTarget.prototype.addEventListener);
+const remove_event_listener = call_bind(
+    EventTarget.prototype.removeEventListener
+);
+const doc_query_selector = call_bind(Document.prototype.querySelector);
+const frag_query_selector = call_bind(DocumentFragment.prototype.querySelector);
+const set_attribute = call_bind(Element.prototype.setAttribute);
+const parser = new DOMParser();
+const { document, location, history, Promise, localStorage } = globalThis;
+
+/**
+ * Creates an HTML element with the specified `tag`, `props`, and `children`. 
+ * @template {keyof HTMLElementTagNameMap} T
+ * @param {T} tag
+ * @param {Record<string, any> | null} [props]
+ * @param {Array<Node | string | number | null>} children
+ * @returns {HTMLElementTagNameMap[T]}
+ */
+function element(tag, props = null, ...children) {
+    const elem = document.createElement(tag);
+    if (props !== null) {
+        for (const [key, value] of Object.entries(props)) {
+            if (key === 'class') {
+                elem.className = value;
+            } else if (key === 'style') {
+                elem.style.cssText = value;
+            } else if (key in elem) {
+                elem[/** @type {keyof typeof elem} */ (key)] = value;
+            } else {
+                set_attribute(elem, key, value);
+            }
+        }
+    }
+    const nodes = children
+        .filter(child => child !== null)
+        .map(child => (typeof child !== 'object' ? `${child}` : child));
+    elem.append(...nodes);
+    return elem;
+}
+
 const [url_version, increment_url_version] = create_version();
 const url = derived(() => (url_version(), { ...location }));
+
 /**
+ * Runs the passed `handler` when navigated to the specified `paths`. 
  * @param {string | string[] | RegExp | RegExp[]} paths
  * @param {() => unknown} handler
  */
@@ -734,15 +797,11 @@ function page(paths, handler) {
     }
     if (Array.isArray(paths) && paths.every(path => path instanceof RegExp)) {
         for (const path of paths) {
-            const handlers = regex_page_handlers.get(path) ?? [];
-            handlers.push(handler);
-            regex_page_handlers.set(path, handlers);
+            add(regex_page_handlers, path, handler);
         }
         return;
     } else if (typeof paths === 'object' && !Array.isArray(paths)) {
-        const handlers = regex_page_handlers.get(paths) ?? [];
-        handlers.push(handler);
-        regex_page_handlers.set(paths, handlers);
+        add(regex_page_handlers, paths, handler);
         return;
     }
     if (Array.isArray(paths)) {
@@ -770,12 +829,36 @@ function page(paths, handler) {
 }
 
 /**
+ * @param {string} src
+ */
+function preload_image(src) {
+    /** @type {Promise<void>} */
+    const promise = new Promise(resolve => {
+        const image = new Image();
+        image.src = src;
+        image.addEventListener('load', () => {
+            resolve();
+        });
+        image.addEventListener('error', () => {
+            resolve();
+        });
+    });
+    return promise;
+}
+
+/**
  * @param {string} url
  */
 async function prefetch(url) {
+    if (page_cache.has(url)) {
+        return;
+    }
     const res = await fetch(url);
     const text = await res.text();
-    const { title, body } = new DOMParser().parseFromString(text, 'text/html');
+    const { title, body } = parser.parseFromString(text, 'text/html');
+    for (const image of body.querySelectorAll('img')) {
+        await preload_image(image.src);
+    }
     const frag = template(body.innerHTML);
     page_cache.set(url, {
         title,
@@ -784,6 +867,7 @@ async function prefetch(url) {
 }
 
 const view_transition = document.startViewTransition;
+
 /**
  * @param {ViewTransitionUpdateCallback} fn
  * @returns {ViewTransition}
@@ -814,6 +898,9 @@ function maybe_view_transition(fn) {
  * @param {string} url
  */
 async function goto_prefetched(url) {
+    if (new URL(url, location.href).href === location.href) {
+        return;
+    }
     const { title, body } =
         /** @type {NonNullable<ReturnType<typeof page_cache['get']>>} */ (
             page_cache.get(url)
@@ -821,20 +908,25 @@ async function goto_prefetched(url) {
     for (const handler of on_destroy_handlers) {
         await handler();
     }
+    navigating = true;
     on_destroy_handlers = [];
     const transition = maybe_view_transition(() => {
         history.pushState(url, '', url);
         document.title = title;
         const fragment = body();
-        set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
+        set_nav(
+            /** @type {HTMLElement} */ (frag_query_selector(fragment, 'nav'))
+        );
         document.body.replaceChildren(fragment);
         increment_url_version();
         set_rendered_url(location.pathname);
     });
     await transition.updateCallbackDone;
     await transition.finished;
+    navigating = false;
     await init();
 }
+
 /**
  * Renders the specified `url`.
  * @param {string} url
@@ -849,7 +941,7 @@ async function render(url) {
         );
     document.title = title;
     const fragment = body();
-    set_nav(/** @type {HTMLElement} */ (fragment.querySelector('nav')));
+    set_nav(/** @type {HTMLElement} */ (frag_query_selector(fragment, 'nav')));
     document.body.replaceChildren(fragment);
     set_rendered_url(new URL(url, location.href).pathname);
     throw redirect_error;
@@ -863,6 +955,9 @@ async function render(url) {
  */
 async function goto(url, hard = false) {
     const { href, host } = new URL(url, location.href);
+    if (href === location.href) {
+        throw redirect_error;
+    }
     if (hard) {
         // setting `location.href` on page load doesn't seem to work
         queueMicrotask(() => {
@@ -904,7 +999,8 @@ async function prefetch_all_links() {
     await Promise.all(prefetches);
     for (const [url, nodes] of links) {
         for (const node of nodes) {
-            node.addEventListener(
+            add_event_listener(
+                node,
                 'click',
                 async event => {
                     event.preventDefault();
@@ -973,18 +1069,21 @@ function signal_from(getter, setter) {
     }
     return [get, _set];
 }
+
 // this would be so much nicer if import bytes (https://github.com/tc39/proposal-import-bytes)
 // were in the ecma262 spec (and baseline)
 // but alas, this is (somewhat) necessary for decent-ish performance
 const default_user_profile =
-    'data:image/png;base64,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';
+    'data:image/svg+xml,%3Csvg%20width%3D%2277%22%20height%3D%2277%22%20viewBox%3D%220%200%2077%2077%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2238.5%22%20cy%3D%2238.5%22%20r%3D%2238%22%20fill%3D%22%233A3A78%22%20stroke%3D%22white%22%2F%3E%3Ccircle%20cx%3D%2238.5%22%20cy%3D%2228.5%22%20r%3D%2222%22%20fill%3D%22%233A3A78%22%20stroke%3D%22white%22%2F%3E%3Cmask%20id%3D%22path-3-inside-1_104_636%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M38.3652%2053C42.3049%2053%2046.2059%2053.647%2049.8457%2054.9033C53.4854%2056.1597%2056.7924%2058.0009%2059.5781%2060.3223C61.8133%2062.1849%2063.6771%2064.3281%2065.1055%2066.6689C58.2292%2073.0772%2049.0061%2077%2038.8652%2077C28.4141%2077%2018.9371%2072.8341%2012%2066.0742C13.3742%2063.9646%2015.1078%2062.026%2017.1523%2060.3223C19.938%2058.0009%2023.2451%2056.1597%2026.8848%2054.9033C30.5245%2053.647%2034.4256%2053%2038.3652%2053Z%22%2F%3E%3C%2Fmask%3E%3Cpath%20d%3D%22M38.3652%2053C42.3049%2053%2046.2059%2053.647%2049.8457%2054.9033C53.4854%2056.1597%2056.7924%2058.0009%2059.5781%2060.3223C61.8133%2062.1849%2063.6771%2064.3281%2065.1055%2066.6689C58.2292%2073.0772%2049.0061%2077%2038.8652%2077C28.4141%2077%2018.9371%2072.8341%2012%2066.0742C13.3742%2063.9646%2015.1078%2062.026%2017.1523%2060.3223C19.938%2058.0009%2023.2451%2056.1597%2026.8848%2054.9033C30.5245%2053.647%2034.4256%2053%2038.3652%2053Z%22%20fill%3D%22%233A3A78%22%2F%3E%3Cpath%20d%3D%22M38.3652%2053V52V53ZM49.8457%2054.9033L50.172%2053.9581L50.172%2053.958L49.8457%2054.9033ZM59.5781%2060.3223L60.2183%2059.554L60.2183%2059.554L59.5781%2060.3223ZM65.1055%2066.6689L65.7872%2067.4005L66.384%2066.8444L65.9591%2066.1481L65.1055%2066.6689ZM12%2066.0742L11.1621%2065.5284L10.7136%2066.217L11.3021%2066.7904L12%2066.0742ZM17.1523%2060.3223L16.5122%2059.554L16.5122%2059.554L17.1523%2060.3223ZM26.8848%2054.9033L26.5585%2053.958L26.5585%2053.9581L26.8848%2054.9033ZM38.3652%2053V54C42.1964%2054%2045.987%2054.6293%2049.5194%2055.8486L49.8457%2054.9033L50.172%2053.958C46.4249%2052.6646%2042.4134%2052%2038.3652%2052V53ZM49.8457%2054.9033L49.5194%2055.8486C53.0517%2057.0679%2056.251%2058.8514%2058.938%2061.0905L59.5781%2060.3223L60.2183%2059.554C57.3339%2057.1504%2053.919%2055.2514%2050.172%2053.9581L49.8457%2054.9033ZM59.5781%2060.3223L58.9379%2061.0905C61.0935%2062.8868%2062.8836%2064.9475%2064.2518%2067.1898L65.1055%2066.6689L65.9591%2066.1481C64.4706%2063.7086%2062.5332%2061.4831%2060.2183%2059.554L59.5781%2060.3223ZM65.1055%2066.6689L64.4237%2065.9374C57.7251%2072.1801%2048.743%2076%2038.8652%2076V77V78C49.2692%2078%2058.7334%2073.9743%2065.7872%2067.4005L65.1055%2066.6689ZM38.8652%2077V76C28.6853%2076%2019.4559%2071.9434%2012.6979%2065.358L12%2066.0742L11.3021%2066.7904C18.4183%2073.7248%2028.1428%2078%2038.8652%2078V77ZM12%2066.0742L12.8379%2066.62C14.155%2064.5979%2015.8209%2062.7335%2017.7925%2061.0905L17.1523%2060.3223L16.5122%2059.554C14.3947%2061.3186%2012.5933%2063.3312%2011.1621%2065.5284L12%2066.0742ZM17.1523%2060.3223L17.7925%2061.0905C20.4795%2058.8514%2023.6787%2057.0679%2027.2111%2055.8486L26.8848%2054.9033L26.5585%2053.9581C22.8115%2055.2514%2019.3966%2057.1504%2016.5122%2059.554L17.1523%2060.3223ZM26.8848%2054.9033L27.2111%2055.8486C30.7435%2054.6293%2034.5341%2054%2038.3652%2054V53V52C34.3171%2052%2030.3056%2052.6646%2026.5585%2053.958L26.8848%2054.9033Z%22%20fill%3D%22white%22%20mask%3D%22url(%23path-3-inside-1_104_636)%22%2F%3E%3C%2Fsvg%3E';
 /** @type {Signal<User | null>} */
 const [user, set_user] = signal_from(
     () => JSON.parse((localStorage.user ??= JSON.stringify(null))),
     value => (localStorage.user = JSON.stringify(value))
 );
 const [rendered_url, set_rendered_url] = signal(location.pathname);
-window.addEventListener('storage', e => {
+
+// @ts-expect-error
+add_event_listener(window, 'storage', (/** @type {StorageEvent} */ e) => {
     if (e.storageArea !== localStorage) {
         return;
     }
@@ -1016,13 +1115,14 @@ function on(target, event, handler) {
         }
     };
     // @ts-expect-error
-    target.addEventListener(event, actual_handler);
+    add_event_listener(target, event, actual_handler);
     on_destroy(() => {
         // @ts-expect-error
-        target.removeEventListener(event, actual_handler);
+        remove_event_listener(target, event, actual_handler);
     });
 }
 
+/** @__NO_SIDE_EFFECTS__ */
 /**
  * @template {string} T
  * @param {T} query
@@ -1031,7 +1131,7 @@ function on(target, event, handler) {
 function media_query(query) {
     const match = matchMedia(query);
     const [matches, set_matches] = signal(match.matches);
-    match.addEventListener('change', () => {
+    add_event_listener(match, 'change', () => {
         set_matches(match.matches);
     });
     // @ts-expect-error
@@ -1039,59 +1139,48 @@ function media_query(query) {
 }
 
 const [nav, set_nav] = signal(
-    /** @type {HTMLElement} */ (document.querySelector('nav'))
+    /** @type {HTMLElement} */ (doc_query_selector(document, 'nav'))
 );
+
+const [ready, set_ready] = signal(false);
 
 const main = derived(
     () => (
         url_version(),
-        /** @type {HTMLElement} */ (document.querySelector('main'))
+        /** @type {HTMLElement} */ (doc_query_selector(document, 'main'))
     )
 );
 
 const mobile = media_query('screen and (orientation: portrait)');
 
 effect(() => {
-    main().setAttribute('url', url().pathname);
-    main().setAttribute('rendered_url', rendered_url());
+    const m = main();
+    set_attribute(m, 'url', url().pathname);
+    set_attribute(m, 'rendered_url', rendered_url());
 });
 
-const sign_up = template('<a href="/sign-up/">Sign Up</a>');
+const sign_up = template('<a href="/sign-up">Sign Up</a>');
 /** <svg width="48" height="48" viewBox="0 0 48 48" fill="#555" xmlns="http://www.w3.org/2000/svg">
             <circle r="24" cx="24" cy="24" />
         </svg> */
 const clone = template(
     `<details>
     <summary>
-        <img src="${default_user_profile}" />
-        Account
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 18L24 30L36 18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <img src="${default_user_profile}" />Account<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 18L24 30L36 18" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </summary>
     <a href="/">
-        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#fff">
-            <path d="M220-180h150v-250h220v250h150v-390L480-765 220-570v390Zm-60 60v-480l320-240 320 240v480H530v-250H430v250H160Zm320-353Z"/>
-        </svg>
-        Dashboard
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#fff"><path d="M220-180h150v-250h220v250h150v-390L480-765 220-570v390Zm-60 60v-480l320-240 320 240v480H530v-250H430v250H160Zm320-353Z"/></svg>Dashboard
     </a>
     <a href="/settings">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="48px"
-            viewBox="0 -960 960 960"
-            width="48px"
-            fill="#fff"
-        >
-            <path
-                d="m388-80-20-126q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"
-            />
+        <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#fff">
+            <path d="m388-80-20-126q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z" />
         </svg>
         Settings
     </a>
 </details>`
 );
 
+/** @__NO_SIDE_EFFECTS__ */
 function account_dropdown() {
     const fragment = clone();
     const details = /** @type {HTMLDetailsElement} */ (fragment.firstChild);
@@ -1111,29 +1200,39 @@ function account_dropdown() {
 
 effect(() => {
     const child = /** @type {HTMLElement} */ (nav().lastElementChild);
-    if (user() !== null) {
-        child.replaceWith(account_dropdown());
+    const update = () => {
+        if (user() !== null) {
+            child.replaceWith(account_dropdown());
+        } else {
+            child.replaceWith(sign_up());
+        }
+    };
+    if (navigating) {
+        update();
     } else {
-        child.replaceWith(sign_up());
+        maybe_view_transition(update);
     }
 });
 
 page('/', () => {
     const home_page = /** @type {HTMLTemplateElement} */ (
-        document.querySelector('.homepage')
+        doc_query_selector(document, '.homepage')
     );
     const dashboard = /** @type {HTMLTemplateElement} */ (
-        document.querySelector('.dashboard')
+        doc_query_selector(document, '.dashboard')
     );
-    const main = /** @type {HTMLElement} */ (document.querySelector('main'));
+    const main = /** @type {HTMLElement} */ (
+        doc_query_selector(document, 'main')
+    );
     if (user() !== null) {
+        document.title = `Dashboard — PawPal`;
         const fragment = /** @type {DocumentFragment} */ (
             dashboard.content.cloneNode(true)
         );
         /** @type {Reminder[]} */
         const reminders = [];
         const pets_carousel = /** @type {HTMLDivElement} */ (
-            fragment.querySelector('.pets-carousel')
+            frag_query_selector(fragment, '.pets-carousel')
         );
         const pets = /** @type {User} */ (user()).pets;
         const pets_len = pets.length;
@@ -1142,21 +1241,28 @@ page('/', () => {
             index < pets_len;
             pet = pets[++index]
         ) {
-            const pet_item = document.createElement('div');
-            pet_item.className = 'pet-item';
-            const img = document.createElement('img');
-            img.src = pet.images.icon;
-            const p = document.createElement('p');
-            p.textContent = pet.name;
-            pet_item.append(img, p);
-            const wrapper = document.createElement('a');
-            wrapper.href = `/pet/${index}`;
-            wrapper.append(pet_item);
+            const pet_item = element(
+                'div',
+                {
+                    className: 'pet-item'
+                },
+                element('img', {
+                    src: pet.images.icon
+                }),
+                element('p', null, pet.name)
+            );
+            const wrapper = element(
+                'a',
+                {
+                    href: `/pet/${index}`
+                },
+                pet_item
+            );
             pets_carousel.append(wrapper);
             reminders.push(...pet.reminders);
         }
         const reminders_list = /** @type {HTMLDivElement} */ (
-            fragment.querySelector('.reminders')
+            frag_query_selector(fragment, '.reminders')
         );
         const sorted_reminders = pets
             .map(({ reminders }, index) => ({
@@ -1180,13 +1286,13 @@ page('/sign-up', async () => {
         await goto('/');
     }
     const form = /** @type {HTMLFormElement} */ (
-        document.querySelector('form')
+        doc_query_selector(document, 'form')
     );
     const email = /** @type {HTMLInputElement} */ (
-        document.querySelector('input[type=email]')
+        doc_query_selector(document, 'input[type=email]')
     );
     const password = /** @type {HTMLInputElement} */ (
-        document.querySelector('input[type=password]')
+        doc_query_selector(document, 'input[type=password]')
     );
     on(form, 'submit', async e => {
         if (email.validity.valid && password.validity.valid) {
@@ -1208,6 +1314,15 @@ page(['/settings', '/new-pet'], async () => {
     }
 });
 
+page('/new-pet', () => {
+    const form = /** @type {HTMLFormElement} */ (
+        doc_query_selector(document, 'form')
+    );
+    on(form, 'submit', e => {
+        e.preventDefault();
+    });
+});
+
 page(/^\/pet\/[0-9]+$/, async () => {
     if (user() === null) {
         await render('/404');
@@ -1215,3 +1330,4 @@ page(/^\/pet\/[0-9]+$/, async () => {
 });
 
 await init();
+set_ready(true);

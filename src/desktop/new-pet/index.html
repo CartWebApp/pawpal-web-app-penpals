@@ -5,12 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/app.css" />
         <script type="module" src="/app.js"></script>
-        <title>New Pet Profile</title>
+        <title>New Pet Profile — PawPal</title>
     </head>
     <body>
         <nav>
             <a href="/"><h2>PawPal</h2></a>
-            <a href="/sign-up/">Sign Up</a>
+            <div class="dropdown-skeleton"></div>
         </nav>
         <main>
             <h2>Create a Pet Profile</h2>
@@ -28,200 +28,63 @@
                                     name="species"
                                     id="dog"
                                     value="dog"
+                                    checked
                                 />
                             </li>
                             <li>
                                 <label for="cat">
                                     <img src="/assets/cat.svg" alt="cat" />
                                 </label>
-                                <input type="radio" name="species" id="cat" value="cat" />
+                                <input
+                                    type="radio"
+                                    name="species"
+                                    id="cat"
+                                    value="cat"
+                                />
                             </li>
                             <li>
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 48 48"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M32 14H32.02"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M6.8 36.0001H24C28.2435 36.0001 32.3131 34.3144 35.3137 31.3138C38.3143 28.3133 40 24.2436 40 20.0001V14.0001C40.0045 12.296 39.4647 10.6349 38.4592 9.25892C37.4537 7.88297 36.0351 6.86406 34.4101 6.35066C32.7851 5.83726 31.0386 5.85621 29.4251 6.40473C27.8116 6.95326 26.4154 8.0027 25.44 9.40014L4 40.0001"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M40 14L44 15L40 16"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M20 36V42"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M28 35.5V42"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M14 35.9998C16.4662 35.9997 18.8725 35.2397 20.8915 33.8232C22.9104 32.4068 24.4438 30.4026 25.2831 28.0836C26.1224 25.7646 26.2268 23.2433 25.5821 20.8628C24.9374 18.4823 23.5749 16.3583 21.68 14.7798"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
+                                <label for="bird"
+                                    ><img src="/assets/bird.svg" alt="bird"
+                                /></label>
+                                <input
+                                    type="radio"
+                                    name="species"
+                                    id="bird"
+                                    value="bird"
+                                />
                             </li>
                             <li>
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 48 48"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M13 24C14.88 17.08 22.88 12 30 12C37.12 12 42.12 17.08 44 24C42.12 30.94 37.12 36 30 36C22.88 36 14.88 30.94 13 24Z"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M36 24V25"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M32 35.8601C29.3984 32.4537 27.9891 28.2864 27.9891 24.0001C27.9891 19.7139 29.3984 15.5466 32 12.1401"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M14 21.34C14 16 11.16 11.94 5.45999 11C3.45999 14 3.45999 21 5.91999 24C3.43999 27 3.43999 34 5.45999 37C11.16 36.06 14 32 14 26.66"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M20.92 14.52C20.4 11.76 18.34 8.48003 16 6.00003H27.6C28.549 5.99651 29.4683 6.33051 30.1937 6.94236C30.9192 7.5542 31.4034 8.40404 31.56 9.34003L32.02 12.14"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M32.02 35.86L31.56 38.66C31.4034 39.596 30.9192 40.4459 30.1937 41.0577C29.4683 41.6696 28.549 42.0036 27.6 42H19C20.9377 39.803 21.9985 36.9694 21.98 34.04"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
+                                <label for="fish"
+                                    ><img src="/assets/fish.svg" alt="fish"
+                                /></label>
+                                <input
+                                    type="radio"
+                                    name="species"
+                                    id="fish"
+                                    value="fish"
+                                />
                             </li>
                             <li>
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 48 48"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M24 20L28 28V34C28 34.5304 28.2107 35.0391 28.5858 35.4142C28.9609 35.7893 29.4696 36 30 36H34C34.5304 36 35.0391 35.7893 35.4142 35.4142C35.7893 35.0391 36 34.5304 36 34V28C36 23.7565 34.3143 19.6869 31.3137 16.6863C28.3131 13.6857 24.2435 12 20 12C15.7565 12 11.6869 13.6857 8.68629 16.6863C5.68571 19.6869 4 23.7565 4 28V34C4 34.5304 4.21071 35.0391 4.58579 35.4142C4.96086 35.7893 5.46957 36 6 36H10C10.5304 36 11.0391 35.7893 11.4142 35.4142C11.7893 35.0391 12 34.5304 12 34V28L16 20H24Z"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M9.64001 15.7998L16 19.9998"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M30.36 15.7998L24 19.9998"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M33.86 20H40C41.0609 20 42.0783 20.4214 42.8284 21.1716C43.5786 21.9217 44 22.9391 44 24C44 25.0609 43.5786 26.0783 42.8284 26.8284C42.0783 27.5786 41.0609 28 40 28H4"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
+                                <label for="turtle"
+                                    ><img src="/assets/turtle.svg" alt="turtle"
+                                /></label>
+                                <input
+                                    type="radio"
+                                    name="species"
+                                    id="turtle"
+                                    value="turtle"
+                                />
                             </li>
                             <li>
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 48 48"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M26 32C27.1589 31.9985 28.2935 32.3326 29.2666 32.9621C30.2397 33.5915 31.0097 34.4893 31.4835 35.5469C31.9573 36.6046 32.1147 37.7768 31.9366 38.922C31.7585 40.0671 31.2526 41.1362 30.48 42"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M36 24H36.02"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M36 41.9998H20C17.8783 41.9998 15.8434 41.157 14.3431 39.6567C12.8429 38.1564 12 36.1216 12 33.9998C12 30.2868 13.475 26.7259 16.1005 24.1003C18.726 21.4748 22.287 19.9998 26 19.9998H26.4L19.2 12.7998C18.8323 12.4321 18.5406 11.9956 18.3416 11.5152C18.1426 11.0348 18.0402 10.5198 18.0402 9.99984C18.0402 8.94963 18.4574 7.94244 19.2 7.19984C19.9426 6.45723 20.9498 6.04004 22 6.04004C22.52 6.04004 23.0349 6.14246 23.5153 6.34146C23.9958 6.54046 24.4323 6.83214 24.8 7.19984L31.6 13.9998H32C38.6 13.9998 44 19.3998 44 25.9998V27.9998C44 29.0607 43.5786 30.0781 42.8284 30.8283C42.0783 31.5784 41.0609 31.9998 40 31.9998H38C36.4087 31.9998 34.8826 32.632 33.7574 33.7572C32.6321 34.8824 32 36.4085 32 37.9998"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M40 17.08V8C40 6.93913 39.5786 5.92172 38.8284 5.17157C38.0783 4.42143 37.0609 4 36 4C34.9391 4 33.9217 4.42143 33.1716 5.17157C32.4214 5.92172 32 6.93913 32 8V14"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                    <path
-                                        d="M15.224 25.0479C14.6616 24.0526 13.8265 23.2386 12.8172 22.7019C11.8078 22.1652 10.6661 21.928 9.5264 22.0182C8.38675 22.1085 7.29661 22.5225 6.38432 23.2115C5.47202 23.9004 4.77553 24.8357 4.37685 25.9071C3.97817 26.9786 3.8939 28.1416 4.13394 29.2593C4.37398 30.3771 4.92836 31.403 5.7318 32.2163C6.53524 33.0295 7.55431 33.5964 8.66903 33.85C9.78376 34.1036 10.9478 34.0335 12.024 33.6479"
-                                        stroke="white"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
+                                <label for="rabbit"
+                                    ><img src="/assets/rabbit.svg" alt="rabbit"
+                                /></label>
+                                <input
+                                    type="radio"
+                                    name="species"
+                                    id="rabbit"
+                                    value="rabbit"
+                                />
                             </li>
                         </ul>
                     </div>
@@ -237,11 +100,19 @@
                         <select class="weight-unit">
                             <option value="kg">kg</option>
                             <option value="lb">lb</option>
+                            <option value="g">g</option>
+                            <option value="oz">oz</option>
                         </select>
                     </div>
                 </section>
                 <section class="image">
-                    <input type="image" />
+                    <label for="image"></label>
+                    <input
+                        type="file"
+                        id="image"
+                        accept=".webp,.jpg,.jpeg,.png"
+                    />
+                    <button class="create">Create</button>
                 </section>
             </form>
         </main>

@@ -19,6 +19,7 @@ export interface Reaction extends ReactiveNode {
 export interface Derived<T = unknown> extends Source<T>, Reaction {
     fn: () => T;
     effects: Effect[] | null;
+    root_index: null;
 }
 
 export interface Effect extends Reaction {

@@ -1,0 +1,50 @@
+<svg
+    width="48"
+    height="48"
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+>
+    <path
+        d="M13 24C14.88 17.08 22.88 12 30 12C37.12 12 42.12 17.08 44 24C42.12 30.94 37.12 36 30 36C22.88 36 14.88 30.94 13 24Z"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <path
+        d="M36 24V25"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <path
+        d="M32 35.8601C29.3984 32.4537 27.9891 28.2864 27.9891 24.0001C27.9891 19.7139 29.3984 15.5466 32 12.1401"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <path
+        d="M14 21.34C14 16 11.16 11.94 5.45999 11C3.45999 14 3.45999 21 5.91999 24C3.43999 27 3.43999 34 5.45999 37C11.16 36.06 14 32 14 26.66"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <path
+        d="M20.92 14.52C20.4 11.76 18.34 8.48003 16 6.00003H27.6C28.549 5.99651 29.4683 6.33051 30.1937 6.94236C30.9192 7.5542 31.4034 8.40404 31.56 9.34003L32.02 12.14"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+    <path
+        d="M32.02 35.86L31.56 38.66C31.4034 39.596 30.9192 40.4459 30.1937 41.0577C29.4683 41.6696 28.549 42.0036 27.6 42H19C20.9377 39.803 21.9985 36.9694 21.98 34.04"
+        stroke="white"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
+</svg>

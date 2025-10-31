@@ -6,6 +6,17 @@ export default defineConfig({
     treeshake: {
         preset: 'smallest'
     },
-    // @ts-expect-error no idea why this doesn't work
-    plugins: [node_resolve(), terser()]
+    plugins: [
+        node_resolve(),
+        /** @type {import('@rollup/plugin-terser').default} */ (
+            /** @type {unknown} */ (terser)
+        )({
+            ecma: 2020,
+            compress: {
+                ecma: 2020,
+                passes: 5,
+                module: true
+            }
+        })
+    ]
 });

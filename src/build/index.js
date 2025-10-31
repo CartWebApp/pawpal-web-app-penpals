@@ -5,7 +5,10 @@ import { join, parse } from 'path';
 import { transform } from 'lightningcss';
 import { createHash } from 'crypto';
 import { rollup } from 'rollup';
+import { minify } from 'html-minifier-terser';
+import minify_xml from 'minify-xml';
 import rollup_config from '../../rollup.config.js';
+import { ROUTES } from './constants.js';
 
 let running = false;
 
@@ -13,7 +16,7 @@ let running = false;
  * @param {string} [dir]
  * @param {boolean} [dev]
  */
-export default async function build(dir = 'routes', dev = false) {
+export default async function build(dir = ROUTES, dev = false) {
     // we treat this as a semaphore to avoid rerunning when a build hasn't completed
     // which can lead to errors (e.g. `.tmp` folder gets deleted by new build, while old build is still copying files over)
     if (running) {
@@ -25,8 +28,6 @@ export default async function build(dir = 'routes', dev = false) {
         }
 
         await mkdir(join(process.cwd(), '.tmp'));
-
-        
 
         for (const file of await readdir(join(process.cwd(), 'src', dir), {
             recursive: true,
@@ -60,6 +61,21 @@ export default async function build(dir = 'routes', dev = false) {
                     file: path,
                     sourcemap: (dev && 'inline') || false
                 });
+            }
+            if (ext === '.html') {
+                const html = await readFile(path, 'utf-8');
+                const minified = await minify(html, {
+                    removeComments: true,
+                    removeAttributeQuotes: true,
+                    collapseWhitespace: true,
+                    useShortDoctype: true
+                });
+                await writeFile(path, minified);
+            }
+            if (ext === '.svg' || ext === '.xml') {
+                const xml = await readFile(path, 'utf-8');
+                const minified = minify_xml(xml);
+                await writeFile(path, minified);
             }
         }
 
@@ -152,6 +168,7 @@ async function reconcile(source, destination) {
     }
 }
 
+// `import.meta.main` doesn't seem to work consistently, so we need a fallback
 if (import.meta.main || process.argv.includes('--build')) {
     await build();
 }

@@ -113,7 +113,7 @@ export default async function build_netlify_middleware(middlewares) {
         }
         console.info(
             `  ${colors.green('➜')}  ${colors.bold('Local')}:   ${color_url(
-                'localhost:5173'
+                'http://localhost:5173'
             )}`
         );
         console.info(

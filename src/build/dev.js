@@ -1,12 +1,10 @@
 import build from './index.js';
-import { createServer } from 'vite';
 import { join, parse, sep } from 'path';
 import { watch } from 'chokidar';
-import build_netlify_middleware from './netlify.js';
-const ROUTES = 'desktop';
+import { ROUTES } from './constants.js';
+
 await build(ROUTES, true);
-let queued = false;
-watch(join(process.cwd(), 'src')).on('change', path => {
+watch(join(process.cwd(), 'src')).on('change', async path => {
     // if the file changed was in `build`, don't queue a rebuild
     if (
         parse(path.replace(join(process.cwd(), 'src'), '').replace(sep, ''))
@@ -14,33 +12,18 @@ watch(join(process.cwd(), 'src')).on('change', path => {
     ) {
         return;
     }
-    if (!queued) {
-        queued = true;
-        queueMicrotask(async () => {
-            queued = false;
-            try {
-                await build(ROUTES, true);
-            } catch (err) {
-                const error = /** @type {Error} */ (err);
-                server.hot.send({
-                    type: 'error',
-                    err: {
-                        ...error,
-                        message: error.message,
-                        stack: error.stack ?? ''
-                    }
-                });
+    try {
+        await build(ROUTES, true);
+    } catch (err) {
+        const error = /** @type {Error} */ (err);
+        server.hot.send({
+            type: 'error',
+            err: {
+                ...error,
+                message: error.message,
+                stack: error.stack ?? ''
             }
         });
     }
 });
-const server = await createServer({
-    root: join(process.cwd(), 'dist'),
-    server: {
-        middlewareMode: true
-    },
-    appType: 'custom'
-});
-const netlify_middleware = await build_netlify_middleware(server.middlewares);
-server.bindCLIShortcuts();
-netlify_middleware?.listen(5173);
+import { server } from './vite.js';

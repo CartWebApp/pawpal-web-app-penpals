@@ -19,6 +19,7 @@ export interface Reaction extends ReactiveNode {
 export interface Derived<T = unknown> extends Source<T>, Reaction {
     fn: () => T;
     effects: Effect[] | null;
+    root_index: null;
 }
 
 export interface Effect extends Reaction {
@@ -78,6 +79,7 @@ export interface User {
 type PetSpecies = 'dog' | 'cat' | 'bird' | 'fish' | 'turtle' | 'rabbit';
 type Metric = `${'k' | ''}g`;
 type Imperial = 'lb' | 'oz';
+export type Unit = Metric | Imperial;
 
 export interface Pet {
     name: string;
@@ -90,7 +92,7 @@ export interface Pet {
     };
     weight: {
         amount: number;
-        unit: Metric | Imperial;
+        unit: Unit;
     };
     medicines: Medicine[];
     reminders: Reminder[];

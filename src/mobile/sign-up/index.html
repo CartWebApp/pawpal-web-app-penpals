@@ -5,23 +5,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/app.css" />
         <script type="module" src="/app.js"></script>
-        <title>PawPal</title>
+        <title>Sign Up — PawPal</title>
     </head>
     <body>
         <nav>
             <a href="/"><h2>PawPal</h2></a>
-            <a href="/sign-up/">Sign Up</a>
+            <div class="dropdown-skeleton"></div>
         </nav>
-        
         <main>
-            <div class="sign-up">
-                <img src="icon.png"/>
+            <form class="sign-up">
+                <img src="icon.png" alt="user">
                 <h2>Sign Up</h2>
-                <input type="email" placeholder="Enter your email address" />
-                <input type="password" placeholder="Enter your password" />
-                <button>Join</button>
-            </div>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email address"
+                    autocomplete="email"
+                    required
+                />
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="new-password"
+                    required
+                />
+                <button class="join" type="submit">Join</button>
+            </form>
         </main>
     </body>
-    
 </html>

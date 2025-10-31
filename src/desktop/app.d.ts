@@ -79,6 +79,7 @@ export interface User {
 type PetSpecies = 'dog' | 'cat' | 'bird' | 'fish' | 'turtle' | 'rabbit';
 type Metric = `${'k' | ''}g`;
 type Imperial = 'lb' | 'oz';
+export type Unit = Metric | Imperial;
 
 export interface Pet {
     name: string;
@@ -91,7 +92,7 @@ export interface Pet {
     };
     weight: {
         amount: number;
-        unit: Metric | Imperial;
+        unit: Unit;
     };
     medicines: Medicine[];
     reminders: Reminder[];

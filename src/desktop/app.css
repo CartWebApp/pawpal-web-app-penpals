@@ -257,7 +257,7 @@ main.error {
     }
 }
 
-main:has(form) {
+main:has(h2 + form) {
     & > h2 {
         font-weight: 500;
         margin-bottom: 0rem;
@@ -342,6 +342,9 @@ main:has(form) {
                 color: var(--dark-mode-text);
                 background: var(--dark-mode-fg);
                 display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
                 width: 15rem;
                 height: 15rem;
                 border-radius: 50%;
@@ -451,4 +454,9 @@ button {
     background: var(--dark-mode-alt-fg);
     width: 9.6em;
     height: 2.4em;
+}
+
+.skeleton {
+    background: var(--dark-mode-alt-fg);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

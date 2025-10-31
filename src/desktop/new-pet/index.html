@@ -89,14 +89,14 @@
                         </ul>
                     </div>
                     <label for="breed">Breed</label
-                    ><input type="text" name="breed" />
+                    ><input type="text" name="breed" required />
                     <label for="name">Name</label
-                    ><input type="text" name="name" />
+                    ><input type="text" name="name" required />
                     <label for="age">Age</label
-                    ><input type="number" min="0" name="age" />
+                    ><input type="number" min="0" name="age" required />
                     <label for="weight">Weight</label>
                     <div class="weight-input">
-                        <input type="number" min="0" name="weight" />
+                        <input type="number" min="0" name="weight" required />
                         <select class="weight-unit">
                             <option value="kg">kg</option>
                             <option value="lb">lb</option>
@@ -106,13 +106,30 @@
                     </div>
                 </section>
                 <section class="image">
-                    <label for="image"></label>
+                    <label for="image">
+                        <svg
+                            width="71"
+                            height="71"
+                            viewBox="0 0 71 71"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M62.125 44.375V56.2083C62.125 57.7775 61.5016 59.2825 60.392 60.392C59.2825 61.5016 57.7775 62.125 56.2083 62.125H14.7917C13.2225 62.125 11.7175 61.5016 10.608 60.392C9.49836 59.2825 8.875 57.7775 8.875 56.2083V44.375M50.2917 23.6667L35.5 8.875M35.5 8.875L20.7083 23.6667M35.5 8.875V44.375"
+                                stroke="white"
+                                stroke-width="4"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                        <p>Upload Pet Image</p>
+                    </label>
                     <input
                         type="file"
                         id="image"
                         accept=".webp,.jpg,.jpeg,.png"
                     />
-                    <button class="create">Create</button>
+                    <button class="create" type="submit">Create</button>
                 </section>
             </form>
         </main>

@@ -1,4 +1,4 @@
-/** @import { Source, Reaction, Derived, Effect, Fork, Signal, User, Reminder, IsMediaQuery } from './app.js' */
+/** @import { Source, Reaction, Derived, Effect, Fork, Signal, User, Reminder, IsMediaQuery, Pet, PetSpecies, Unit } from './app.js' */
 /// <reference lib="es2023" />
 // @ts-check
 const DIRTY = 1 << 1;
@@ -745,7 +745,7 @@ const parser = new DOMParser();
 const { document, location, history, Promise, localStorage } = globalThis;
 
 /**
- * Creates an HTML element with the specified `tag`, `props`, and `children`. 
+ * Creates an HTML element with the specified `tag`, `props`, and `children`.
  * @template {keyof HTMLElementTagNameMap} T
  * @param {T} tag
  * @param {Record<string, any> | null} [props]
@@ -778,7 +778,7 @@ const [url_version, increment_url_version] = create_version();
 const url = derived(() => (url_version(), { ...location }));
 
 /**
- * Runs the passed `handler` when navigated to the specified `paths`. 
+ * Runs the passed `handler` when navigated to the specified `paths`.
  * @param {string | string[] | RegExp | RegExp[]} paths
  * @param {() => unknown} handler
  */
@@ -1157,6 +1157,11 @@ effect(() => {
     const m = main();
     set_attribute(m, 'url', url().pathname);
     set_attribute(m, 'rendered_url', rendered_url());
+    if (user() !== null) {
+        m.classList.add('logged-in');
+    } else {
+        m.classList.remove('logged-in');
+    }
 });
 
 const sign_up = template('<a href="/sign-up">Sign Up</a>');
@@ -1314,11 +1319,88 @@ page(['/settings', '/new-pet'], async () => {
     }
 });
 
+/**
+ * @param {File} file
+ */
+function file_to_data_uri(file) {
+    const reader = new FileReader();
+    const promise = new Promise(resolve => {
+        add_event_listener(reader, 'load', () => {
+            resolve(reader.result);
+        });
+        reader.readAsDataURL(file);
+    });
+    return promise;
+}
+
 page('/new-pet', () => {
     const form = /** @type {HTMLFormElement} */ (
         doc_query_selector(document, 'form')
     );
-    on(form, 'submit', e => {
+    /**
+     * @param {string} input_name
+     */
+    function get_value(input_name) {
+        return /** @type {HTMLInputElement} */ (
+            doc_query_selector(document, `input[name=${input_name}]`)
+        );
+    }
+    /**
+     * @param {string[]} inputs
+     */
+    function valid(...inputs) {
+        const elements = inputs.map(name => get_value(name));
+        return elements.every(element => element.validity.valid);
+    }
+    on(form, 'submit', async e => {
+        if (valid('name', 'breed', 'weight', 'age')) {
+            const species = /** @type {PetSpecies} */ (
+                /** @type {HTMLInputElement} */ (
+                    doc_query_selector(document, 'input[name=species]:checked')
+                ).value
+            );
+            const name = get_value('name').value;
+            const breed = get_value('breed').value;
+            const weight = get_value('weight').valueAsNumber;
+            const age = get_value('age').valueAsNumber;
+            const image = /** @type {FileList} */ (
+                /** @type {HTMLInputElement} */ (
+                    doc_query_selector(document, 'input[type=file]')
+                ).files
+            )[0];
+            const weight_unit = /** @type {Unit} */ (
+                /** @type {HTMLSelectElement} */ (
+                    doc_query_selector(document, 'select.weight-unit')
+                ).value
+            );
+            /** @type {Pet} */
+            const pet = {
+                name,
+                age,
+                species,
+                breed,
+                weight: {
+                    amount: weight,
+                    unit: weight_unit
+                },
+                images: {
+                    icon: await file_to_data_uri(image),
+                    hero: ''
+                },
+                reminders: [],
+                medicines: []
+            };
+            const pet_index = /** @type {User} */ (user()).pets.length;
+            set_user(
+                /** @type {(current: User | null) => User} */ (
+                    (/** @type {User} */ user) => ({
+                        ...user,
+                        pets: [...user.pets, pet]
+                    })
+                )
+            );
+            await goto(`/pet/${pet_index}`);
+        }
         e.preventDefault();
     });
 });

@@ -45,12 +45,15 @@ export default async function build(dir = ROUTES, dev = false) {
                 });
             }
             if (ext === '.css') {
-                const transformed = transform({
-                    minify: true,
-                    code: await readFile(path),
-                    filename: join(file.parentPath, file.name)
-                });
-                await writeFile(path, transformed.code);
+                const code = await readFile(path, 'utf-8');
+                const minified = code.replace(/(\r?\n)|\t|(\s+)/g, ' ').replace(/\s+/g, ' ');
+                await writeFile(path, minified);
+                // const transformed = transform({
+                //     minify: true,
+                //     code: await readFile(path),
+                //     filename: join(file.parentPath, file.name)
+                // });
+                // await writeFile(path, transformed.code);
             }
             if (ext === '.js') {
                 const bundle = await rollup({

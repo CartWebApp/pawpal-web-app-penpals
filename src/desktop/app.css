@@ -41,6 +41,62 @@ body {
     text-indent: 5em;
 }
 
+main:has(aside) {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+html:has(body > main > aside) {
+    height: 100%;
+    overflow: hidden;
+    & > body {
+        height: 100%;
+        overflow: hidden;
+    }
+}
+
+aside {
+    padding: 1rem;
+    padding-bottom: 0;
+    background: var(--dark-mode-fg);
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+    justify-content: flex-start;
+    gap: 65%;
+    overflow: hidden;
+    flex-direction: column;
+    & > .top {
+        & > h2 {
+            margin: 0;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.8rem;
+        }
+        & > ul {
+            list-style: none;
+            & > li {
+                margin-left: 0;
+                & > a {
+                    color: var(--dark-mode-subtext);
+                    text-decoration: none;
+                    font-size: 1.3rem;
+                }
+            }
+        }
+    }
+    & > .delete-account {
+        background: none;
+        border: none;
+        box-shadow: none;
+        display: inline;
+        color: var(--dark-mode-subtext);
+    }
+}
+
 nav {
     display: flex;
     justify-content: space-between;
@@ -57,8 +113,9 @@ nav {
             font-family: 'Protest Strike';
             color: var(--dark-mode-text);
             font-weight: normal;
-            font-size: 2rem;
+            font-size: 2.3rem;
             cursor: pointer;
+            padding: 0;
         }
     }
     & > a:not(:first-child) {
@@ -79,10 +136,9 @@ nav {
         min-height: 2.4rem;
         color: var(--dark-mode-text);
         background: var(--dark-mode-fg);
-        align-content: center;
         align-items: center;
         width: 9rem !important;
-        justify-content: center;
+        place-content: center;
         font-size: 1.2rem;
         padding-left: 0.5rem;
         align-self: center;
@@ -186,9 +242,8 @@ main {
         gap: 0.5rem;
         & > a {
             display: flex;
-            justify-content: center;
+            place-content: center;
             align-items: center;
-            align-content: center;
         }
         & > a > svg {
             width: 1.5rem;
@@ -222,9 +277,8 @@ main {
 main:has(.sign-up) {
     display: flex;
     flex-direction: column;
-    align-content: center;
     align-items: center;
-    justify-content: center;
+    place-content: center;
     height: 90vh;
 }
 

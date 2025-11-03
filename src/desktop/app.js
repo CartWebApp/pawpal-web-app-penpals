@@ -1331,8 +1331,13 @@ page('/settings', async () => {
         doc_query_selector(document, '.account-header > img')
     );
     profile.src = /** @type {User} */ (user()).profile_image;
-    const password_text = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.password > p'));
-    password_text.textContent = /** @type {User} */ (user()).password.replace(/./g, '•');
+    const password_text = /** @type {HTMLParagraphElement} */ (
+        doc_query_selector(document, '.password > p')
+    );
+    password_text.textContent = /** @type {User} */ (user()).password.replace(
+        /./g,
+        '•'
+    );
     on(confirm_delete, 'click', async () => {
         set_user(null);
         await goto('/', true);

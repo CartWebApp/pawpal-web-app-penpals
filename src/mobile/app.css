@@ -382,7 +382,7 @@ main:has(form) {
 }
 
 img {
-    transform: translateY(3rem);
+    transform: translateY(0rem);
 }
 
 input:is([type='text'], [type='password'], [type='email'], [type='number']) {
@@ -422,7 +422,7 @@ input[type='number']::-webkit-outer-spin-button {
 button {
     border: none;
     border-radius: 0.3rem;
-    padding: 0.4rem 2rem;
+    padding: 0rem 0rem;
     font-size: 1rem;
     background: var(--dark-mode-alt-fg);
     color: var(--dark-mode-text);
@@ -478,3 +478,36 @@ button {
     height: 20rem;
 }
 
+.pet-hero-options {
+    size: 1rem;
+    padding: 1rem;
+    margin: 0;
+    margin-bottom: 15rem;
+    margin-left: 0rem;
+    display: flex;
+    justify-content:space-around;
+    align-items: center;
+    align-content: center;
+    justify-items: center;
+    width: 3.5rem;
+    gap: 16rem;
+}
+
+.dog-profile {
+    margin-right: 5rem;
+    transform: translateY(0rem);
+    margin-left:0;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-self: center;
+}
+
+.edit {
+    padding: 0.3rem;
+    margin-bottom: 7.5rem;
+    margin-left: 5rem;
+}
+
+/* re-adjust the icons */

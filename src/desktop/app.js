@@ -1399,7 +1399,7 @@ page('/new-pet', () => {
                     })
                 )
             );
-            await goto(`/pet/${pet_index}`);
+            await goto(`/pet/${pet_index}`, true);
         }
         e.preventDefault();
     });

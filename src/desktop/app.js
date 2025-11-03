@@ -1319,6 +1319,26 @@ page(['/settings', '/new-pet'], async () => {
     }
 });
 
+page('/settings', async () => {
+    const confirm_delete = /** @type {HTMLButtonElement} */ (
+        doc_query_selector(document, '.delete-account-confirm')
+    );
+    const email_address = /** @type {HTMLParagraphElement} */ (
+        doc_query_selector(document, '.email-address')
+    );
+    email_address.textContent = /** @type {User} */ (user()).email;
+    const profile = /** @type {HTMLImageElement} */ (
+        doc_query_selector(document, '.account-header > img')
+    );
+    profile.src = /** @type {User} */ (user()).profile_image;
+    const password_text = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.password > p'));
+    password_text.textContent = /** @type {User} */ (user()).password.replace(/./g, '•');
+    on(confirm_delete, 'click', async () => {
+        set_user(null);
+        await goto('/', true);
+    });
+});
+
 /**
  * @param {File} file
  */

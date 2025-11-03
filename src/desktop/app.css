@@ -10,6 +10,12 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Geist Mono';
+    src: url(./assets/fonts/GeistMono-Regular.woff2);
+    font-style: normal;
+}
+
 :root {
     --dark-mode-bg: #1f1f2e;
     --dark-mode-fg: #242442;
@@ -94,6 +100,7 @@ aside {
         box-shadow: none;
         display: inline;
         color: var(--dark-mode-subtext);
+        text-wrap: nowrap;
     }
 }
 
@@ -107,6 +114,7 @@ nav {
     align-items: center;
     box-shadow: 0px 4px 8px #111a;
     position: relative;
+    z-index: 2;
     & > :first-child {
         text-decoration: none;
         & > h2 {
@@ -274,6 +282,32 @@ main {
     }
 }
 
+dialog {
+    background: var(--dark-mode-fg);
+    border-radius: 0.5rem;
+    color: var(--dark-mode-text);
+    border: none;
+    padding: 2rem 1rem;
+    opacity: 0;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    transition: opacity 150ms ease-in;
+    display: flex;
+    &:open {
+        opacity: 1;
+    }
+    & h4 {
+        font-weight: 500;
+        width: 80%;
+    }
+    & .buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 1.5rem;
+    }
+}
+
 main:has(.sign-up) {
     display: flex;
     flex-direction: column;
@@ -426,6 +460,94 @@ main:has(h2 + form) {
     }
     & > button {
         margin-top: 0.5rem;
+    }
+}
+
+.settings {
+    display: flex;
+    flex-direction: column;
+    place-content: center flex-start;
+    align-items: flex-start;
+    width: 100%;
+    & .account {
+        background: var(--dark-mode-fg);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 2rem;
+        border-radius: 0.8rem;
+        width: 90%;
+        & .account-header {
+            background: var(--dark-mode-alt-fg);
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+            border-radius: 0.8rem;
+            z-index: 1;
+            width: 100%;
+            & .account-text {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 0;
+            }
+            & img {
+                margin-left: 1rem;
+            }
+            & h3 {
+                font-size: 2rem;
+                margin-bottom: 0;
+            }
+            & p {
+                font-size: 1rem;
+                font-family: 'Geist Mono';
+                color: var(--dark-mode-subtext);
+                margin-top: 0;
+            }
+        }
+        & .account-password {
+            display: flex;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 1rem;
+            margin-top: -1rem;
+            border-bottom-left-radius: 0.8rem;
+            border-bottom-right-radius: 0.8rem;
+            background: var(--dark-mode-fg);
+            width: 100%;
+            & h4 {
+                margin-left: 2rem;
+                font-size: 1.5rem;
+                font-weight: 500;
+                color: var(--dark-mode-subtext);
+            }
+            & div {
+                background: var(--dark-mode-bg);
+                padding: 0.5rem;
+                border-radius: 0.4rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                gap: 0.5rem;
+                & p {
+                    padding: 0;
+                    margin: 0;
+                }
+            }
+            & button {
+                width: 1.5rem;
+                height: 1.5rem;
+                padding: 0;
+                display: flex;
+                place-content: center;
+                align-items: center;
+                & svg {
+                    width: 1rem;
+                    height: 1rem;
+                }
+            }
+        }
     }
 }
 

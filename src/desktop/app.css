@@ -741,7 +741,7 @@ a:has(.pet-item) {
         & .pet-hero-options {
             display: flex;
             align-items: center;
-            place-content: center space-between;
+            place-content: center flex-end;
         }
     }
 }

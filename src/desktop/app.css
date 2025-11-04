@@ -752,3 +752,22 @@ a:has(.pet-item) {
     align-items: center;
     align-content: center;
 }
+
+form section:has(textarea) {
+    justify-content: center !important;
+    grid-template: repeat(4, 1fr) / repeat(2, 1fr) !important;
+    margin: 1rem;
+}
+
+form textarea {
+    grid-column: 1 / span 2 !important;
+    grid-row: 2 / span 4;
+    background: var(--dark-mode-fg);
+    color: var(--dark-mode-text);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    &::placeholder {
+        color: var(--dark-mode-subtext);
+    }
+}

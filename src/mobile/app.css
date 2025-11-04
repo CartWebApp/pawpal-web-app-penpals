@@ -468,46 +468,179 @@ button {
 
 .pet-hero-skeleton {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 0;
-    margin-left: 0;
-    margin-top: 2rem;
-    background-color:#242442;
+    background-color: #242442;
     border-radius: 1rem;
     height: 20rem;
+    width: 100%;
+    position: relative;
+    transform: translateY(0rem);
 }
 
 .pet-hero-options {
-    size: 1rem;
-    padding: 1rem;
-    margin: 0;
-    margin-bottom: 15rem;
-    margin-left: 0rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
     display: flex;
-    justify-content:space-around;
-    align-items: center;
-    align-content: center;
-    justify-items: center;
-    width: 3.5rem;
-    gap: 16rem;
+    gap: 0.5rem;
 }
 
-.dog-profile {
-    margin-right: 5rem;
-    transform: translateY(0rem);
-    margin-left:0;
-    display: flex;
+.pet-hero-options button {
+    background: var(--dark-mode-alt-fg);
+    border-radius: 0.4rem;
+    padding: 0.3rem;
     align-items: center;
-    align-content: center;
     justify-content: center;
-    justify-self: center;
 }
 
 .edit {
-    padding: 0.3rem;
-    margin-bottom: 7.5rem;
-    margin-left: 5rem;
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
 }
 
-/* re-adjust the icons */
+.dog-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dog-profile img {
+    width: 10rem;
+    height: 10rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.pet-hero-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: var(--dark-mode-fg);
+    border-radius: 1rem;
+    width: 20rem;
+    height: 40rem;
+    margin: 3rem auto;
+    padding: 1rem;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.pet-hero-options {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: flex;
+    gap: 0.4rem;
+}
+.pet-hero-options button {
+    background: var(--dark-mode-alt-fg);
+    border-radius: 0.4rem;
+    padding: 0.3rem;
+    cursor: pointer;
+}
+.pet-hero-options button img {
+    width: 2rem;
+    height: 2rem;
+}
+
+.edit {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+}
+.edit button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.edit img {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.dog-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.2rem;
+}
+.dog-profile img {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--dark-mode-alt-fg);
+}
+
+.pet-info {
+    background: var(--dark-mode-fg);
+    border-radius: 0.6rem;
+    padding: 0.8rem;
+    width: 100%;
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.pet-info p {
+    margin: 0;
+    color: var(--dark-mode-text);
+}
+.pet-info input {
+    width: 100%;
+    margin-top: 0.3rem;
+    border: none;
+    border-radius: 0.3rem;
+    padding: 0.45rem;
+    background: var(--dark-mode-alt-fg);
+    color: var(--dark-mode-text);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.pet-activity {
+    background: var(--dark-mode-fg);
+    border-radius: 0.6rem;
+    padding: 0.8rem;
+    width: 100%;
+    margin-top: 0.8rem;
+    text-align: center;
+}
+.pet-activity h3 {
+    margin: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+.pet-activity .wellness {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.pet-activity .wellness img {
+    width: 5rem;
+    height: 5rem;
+    object-fit: contain;
+}
+
+.details {
+    width: 90%;
+    margin-top: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    background: var(--dark-mode-alt-fg);
+    color: var(--dark-mode-text);
+    font-size: 0.9rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 150ms ease-in;
+}
+.details:hover {
+    background: var(--dark-mode-bg);
+}

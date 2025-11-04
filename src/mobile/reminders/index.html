@@ -1,20 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="/app.css" />
-        <script type="module" src="/app.js"></script>
-        <title>PawPal</title>
-    </head>
-    <body>
-        <nav>
-            <a href="/"><h2>PawPal</h2></a>
-            <div class="dropdown-skeleton"></div>
-        </nav>
-        <main>
-            
-            </template>
-        </main>
-    </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawPal - Reminders</title>
+  <link rel="stylesheet" href="/app.css" />
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="/"><h2>PawPal</h2></a>
+    <div class="dropdown-skeleton"></div>
+  </nav>
+
+  <main class="reminders-container">
+    <h3>Reminders</h3>
+    <div class="reminder-list">
+      <div class="reminder-item">
+        <span>Appointment</span>
+        <input type="checkbox" />
+      </div>
+      <div class="reminder-item">
+        <span>Walk</span>
+        <input type="checkbox" />
+      </div>
+      <div class="reminder-item">
+        <span>Nap Time</span>
+        <input type="checkbox" />
+      </div>
+    </div>
+
+    <button class="add-btn">+</button>
+  </main>
+
+  <footer class="bottom-nav">
+    <a href="#" class="nav-item"><img src="icon1.png" alt="Location" /></a>
+    <a href="#" class="nav-item"><img src="icon2.png" alt="Reminders" /></a>
+    <a href="#" class="nav-item"><img src="iconsetting.png" alt="Settings" /></a>
+  </footer>
+</body>
 </html>

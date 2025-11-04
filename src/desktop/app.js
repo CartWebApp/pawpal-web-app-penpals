@@ -541,7 +541,7 @@ function create_effect(fn, flags = 0) {
         f: flags,
         fn,
         teardown: null,
-        parent: disconnected ? null : reaction_stack.at(-1) ?? null,
+        parent: disconnected ? null : (reaction_stack.at(-1) ?? null),
         next: null,
         prev: null,
         head: null,
@@ -930,6 +930,7 @@ async function goto_prefetched(url) {
 /**
  * Renders the specified `url`.
  * @param {string} url
+ * @returns {Promise<never>}
  */
 async function render(url) {
     if (!page_cache.has(new URL(url, location.href).href)) {
@@ -1307,7 +1308,7 @@ page('/sign-up', async () => {
                 profile_image: default_user_profile,
                 pets: []
             });
-            await goto('/');
+            await goto('/', true);
         }
         e.preventDefault();
     });
@@ -1431,9 +1432,27 @@ page('/new-pet', () => {
 });
 
 page(/^\/pet\/[0-9]+$/, async () => {
-    if (user() === null) {
-        await render('/404');
+    const u = user();
+    if (u === null) {
+        // for some reason `await`ing a `Promise<never>` doesn't work as a type guard
+        // so we have to `return` it
+        return await render('/404');
     }
+    const pet_index = Number(
+        url().pathname.replace(/^\/pet\//, '').replace(/[?/].+/, '')
+    );
+    if (pet_index !== pet_index || u.pets[pet_index] === undefined) {
+        return await render('/404');
+    }
+    const pet = u.pets[pet_index];
+    const age = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.age'));
+    const breed = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.breed'));
+    const name = /** @type {HTMLHeadingElement} */ (doc_query_selector(document, '.pet-hero > h3'));
+    age.textContent = `${pet.age} years old`;
+    breed.textContent = pet.breed;
+    name.textContent = pet.name;
+    const pet_hero = /** @type {HTMLDivElement} */ (doc_query_selector(document, '.pet-hero'));
+    pet_hero.classList.remove('skeleton');
 });
 
 await init();

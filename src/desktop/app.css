@@ -207,7 +207,9 @@ nav {
             margin-left: -0.1rem;
             color: var(--dark-mode-text);
             text-decoration: none;
-            transition: color 150ms ease-in, background 150ms ease-in;
+            transition:
+                color 150ms ease-in,
+                background 150ms ease-in;
             &:last-child {
                 border-bottom-left-radius: 0.4rem;
                 border-bottom-right-radius: 0.4rem;
@@ -221,7 +223,9 @@ nav {
             &:hover {
                 color: var(--dark-mode-subtext);
                 background: var(--dark-mode-alt-fg);
-                transition: color 150ms ease-out, background 150ms ease-out;
+                transition:
+                    color 150ms ease-out,
+                    background 150ms ease-out;
                 & :is(svg, img) {
                     fill: var(--dark-mode-subtext);
                     transition: fill 150ms ease-out;
@@ -593,7 +597,9 @@ button {
     background: var(--dark-mode-alt-fg);
     color: var(--dark-mode-text);
     box-shadow: 0 0 4px #ccc4;
-    transition: color 150ms ease-in, background 150ms ease-in;
+    transition:
+        color 150ms ease-in,
+        background 150ms ease-in;
     cursor: pointer;
     &:hover {
         background: var(--dark-mode-fg);
@@ -671,4 +677,78 @@ a:has(.pet-item) {
 .skeleton {
     background: var(--dark-mode-alt-fg);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    color: transparent;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.pet-hero {
+    display: flex;
+    justify-content: space-between;
+    border-radius: 0.4rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    aspect-ratio: 5;
+    text-shadow: 0 0 4px black;
+    /** decent way to check if the page is loaded */
+    &:is([url] *) {
+        background: url(/assets/dog-hero.svg) center/cover no-repeat;
+    }
+    & h3 {
+        align-self: flex-end;
+        font-size: 3.5rem;
+        font-weight: 500;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+    & .pet-hero-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 5rem;
+        & .pet-hero-data {
+            align-self: flex-end;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 0;
+            & > p {
+                margin: 0;
+                padding: 0;
+                font-size: 2rem;
+            }
+        }
+        & button {
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            place-content: center;
+            align-items: center;
+            & svg {
+                width: 2rem;
+                height: 2rem;
+            }
+        }
+        & button:last-child svg {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        & .pet-hero-options {
+            display: flex;
+            align-items: center;
+            place-content: center space-between;
+        }
+    }
+}
+
+.activity {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    align-content: center;
 }

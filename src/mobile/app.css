@@ -641,6 +641,128 @@ button {
     cursor: pointer;
     transition: background 150ms ease-in;
 }
+
 .details:hover {
     background: var(--dark-mode-bg);
+}
+
+
+/* make next: create new pet profile, settings page, & reminders page */
+
+
+.add-pet-hero-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: var(--dark-mode-fg);
+    border-radius: 1rem;
+    width: 20rem;
+    height: 40rem;
+    margin: 3rem auto;
+    padding: 1rem;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.add-pet-hero-options {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+.add-pet-hero-options button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.add-pet-hero-options img {
+    width: 1.6rem;
+    height: 1.6rem;
+    filter: brightness(0.8);
+    transition: filter 150ms ease-in;
+}
+.add-pet-hero-options img:hover {
+    filter: brightness(1.2);
+}
+
+.add-dog-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0.8rem;
+}
+.add-dog-profile img {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--dark-mode-alt-fg);
+}
+
+.add-pet-hero-skeleton h2 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin: 1.2rem 0;
+    color: var(--dark-mode-text);
+}
+
+.add-pet-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.add-pet-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    width: 100%;
+    align-items: center;
+}
+
+.add-pet-form input {
+    width: 90%;
+    background: var(--dark-mode-alt-fg);
+    border: none;
+    border-radius: 2rem;
+    padding: 0.6rem 1rem;
+    color: var(--dark-mode-text);
+    font-size: 0.9rem;
+    outline: none;
+    text-align: center;
+    transition: background 150ms ease-in, transform 150ms ease-in;
+}
+.add-pet-form input:hover {
+    background: var(--dark-mode-bg);
+    transform: scale(1.02);
+}
+.add-pet-form input::placeholder {
+    color: var(--dark-mode-subtext);
+}
+
+.age-birth {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+}
+.age-birth input {
+    width: 40%;
+}
+
+.update-btn {
+    background: var(--dark-mode-alt-fg);
+    border: none;
+    border-radius: 2rem;
+    padding: 0.6rem 2rem;
+    font-size: 0.95rem;
+    color: var(--dark-mode-text);
+    cursor: pointer;
+    transition: background 150ms ease-in, transform 150ms ease-in;
+    margin-top: 0.8rem;
+}
+.update-btn:hover {
+    background: var(--dark-mode-bg);
+    transform: scale(1.05);
 }

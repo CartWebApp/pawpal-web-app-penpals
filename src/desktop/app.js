@@ -1439,34 +1439,65 @@ page(/^\/pet\/[0-9]+$/, async () => {
         return await render('/404');
     }
     const pet_index = Number(
-        url().pathname.replace(/^\/pet\//, '').replace(/[?/].+/, '')
+        url()
+            .pathname.replace(/^\/pet\//, '')
+            .replace(/[?/].+/, '')
     );
     if (pet_index !== pet_index || u.pets[pet_index] === undefined) {
         return await render('/404');
     }
     const pet = u.pets[pet_index];
-    const age = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.age'));
-    const breed = /** @type {HTMLParagraphElement} */ (doc_query_selector(document, '.breed'));
-    const name = /** @type {HTMLHeadingElement} */ (doc_query_selector(document, '.pet-hero > h3'));
+    const age = /** @type {HTMLParagraphElement} */ (
+        doc_query_selector(document, '.age')
+    );
+    const breed = /** @type {HTMLParagraphElement} */ (
+        doc_query_selector(document, '.breed')
+    );
+    const name = /** @type {HTMLHeadingElement} */ (
+        doc_query_selector(document, '.pet-hero > h3')
+    );
     age.textContent = `${pet.age} years old`;
     breed.textContent = pet.breed;
     name.textContent = pet.name;
-    const pet_hero = /** @type {HTMLDivElement} */ (doc_query_selector(document, '.pet-hero'));
+    const pet_hero = /** @type {HTMLDivElement} */ (
+        doc_query_selector(document, '.pet-hero')
+    );
     pet_hero.classList.remove('skeleton');
-    const delete_pet = /** @type {HTMLButtonElement} */ (doc_query_selector(document, '.delete-pet-confirm'));
-    const edit_pet = /** @type {HTMLButtonElement} */ (doc_query_selector(document, '.edit'));
+    const delete_pet = /** @type {HTMLButtonElement} */ (
+        doc_query_selector(document, '.delete-pet-confirm')
+    );
+    const edit_pet = /** @type {HTMLButtonElement} */ (
+        doc_query_selector(document, '.edit')
+    );
     on(delete_pet, 'click', async () => {
-        set_user((current) => {
+        set_user(current => {
             if (current === null) {
                 return null;
             }
             return {
                 ...current,
                 pets: current.pets.filter(item => pet !== item)
-            }
+            };
         });
         await goto('/', true);
     });
+});
+
+// @ts-expect-error
+effect(async () => {
+    mobile();
+    url();
+    try {
+        if (mobile()) {
+            if (url().pathname.match(/^\/pet/)) {
+                await render(`/mobile/view-pet/${url().pathname.slice(5)}`);
+            } else if (url().pathname.match(/^\/new-reminder/)) {
+                await render(`/mobile/reminders`);
+            } else {
+                await render(`/mobile/${url().pathname.slice(1)}`);
+            }
+        }
+    } catch {}
 });
 
 await init();

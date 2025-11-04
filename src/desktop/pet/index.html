@@ -45,7 +45,11 @@
                                 </defs>
                             </svg>
                         </button>
-                        <button class="delete">
+                        <button
+                            class="delete"
+                            command="show-modal"
+                            commandfor="delete-pet"
+                        >
                             <svg
                                 width="40"
                                 height="40"
@@ -122,6 +126,13 @@
                 <div class="feedings"></div>
                 <div class="medicine"></div>
             </section>
+            <dialog id="delete-pet" closedby="any">
+                <h4>Are you sure you want to delete this pet profile?</h4>
+                <div class="buttons">
+                    <button class="delete-pet-confirm">Yes</button
+                    ><button command="close" commandfor="delete-pet">No</button>
+                </div>
+            </dialog>
         </main>
     </body>
 </html>

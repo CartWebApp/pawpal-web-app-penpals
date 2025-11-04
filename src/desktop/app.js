@@ -1453,6 +1453,20 @@ page(/^\/pet\/[0-9]+$/, async () => {
     name.textContent = pet.name;
     const pet_hero = /** @type {HTMLDivElement} */ (doc_query_selector(document, '.pet-hero'));
     pet_hero.classList.remove('skeleton');
+    const delete_pet = /** @type {HTMLButtonElement} */ (doc_query_selector(document, '.delete-pet-confirm'));
+    const edit_pet = /** @type {HTMLButtonElement} */ (doc_query_selector(document, '.edit'));
+    on(delete_pet, 'click', async () => {
+        set_user((current) => {
+            if (current === null) {
+                return null;
+            }
+            return {
+                ...current,
+                pets: current.pets.filter(item => pet !== item)
+            }
+        });
+        await goto('/', true);
+    });
 });
 
 await init();

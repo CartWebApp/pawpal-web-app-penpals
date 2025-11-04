@@ -45,8 +45,14 @@ export default async function build(dir = ROUTES, dev = false) {
                 });
             }
             if (ext === '.css') {
+                // i found that lightningcss transformed my CSS in some way that made it behave differently
+                // than the un-minified version, so we do a *very* lazy minification here
+                // (TODO make repro and file issue)
                 const code = await readFile(path, 'utf-8');
-                const minified = code.replace(/(\r?\n)|\t|(\s+)/g, ' ').replace(/\s+/g, ' ');
+                const minified = code
+                    .replace(/(\r?\n)|\t|(\s+)/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .replace(/([:;{},>+~]\s)|(\s[{}])/g, m => m.replace(/\s/g, ''));
                 await writeFile(path, minified);
                 // const transformed = transform({
                 //     minify: true,
@@ -77,8 +83,27 @@ export default async function build(dir = ROUTES, dev = false) {
             }
             if (ext === '.svg' || ext === '.xml') {
                 const xml = await readFile(path, 'utf-8');
-                const minified = minify_xml(xml);
-                await writeFile(path, minified);
+                // if the xml is larger than 500kb, skip
+                const kb = xml.length / 512;
+                if (kb > 500) {
+                    continue;
+                }
+                // somewhat hacky way that may or may not work
+                const race = await Promise.race([
+                    /** @type {Promise<null>} */ (
+                        new Promise(resolve => setTimeout(resolve, 500, null))
+                    ),
+                    /** @type {Promise<string>} */ (
+                        new Promise(async resolve => {
+                            const minified = await Promise.resolve(
+                                minify_xml(xml)
+                            );
+                            resolve(minified);
+                        })
+                    )
+                ]);
+                if (race === null) continue;
+                await writeFile(path, race);
             }
         }
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/app.css" />
+        <script type="module" src="/app.js"></script>
+        <title>New Reminder — PawPal</title>
+    </head>
+    <body>
+        <nav>
+            <a href="/"><h2>PawPal</h2></a>
+            <div class="dropdown-skeleton"></div>
+        </nav>
+        <main>
+            <h2>Create a Reminder for Name</h2>
+            <form>
+                <section class="reminder-data">
+                    <label for="type">Type</label><select id="type">
+                        <option value="feeding">Feeding</option>
+                        <option value="walk">Walk</option>
+                    </select>
+                    <textarea name="details" id="Details" placeholder="Details"></textarea>
+                </section>
+                <section class="image">
+                    <input type="datetime" />
+                    <button class="create" type="submit">Create</button>
+                </section>
+            </form>
+        </main>
+    </body>
+</html>
